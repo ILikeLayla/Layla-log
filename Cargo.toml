@@ -1,5 +1,5 @@
 [package]
-name = "layla_log"
+name = "layla-log"
 version = "0.1.1"
 edition = "2021"
 description = "A simple logger library."
