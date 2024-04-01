@@ -1,6 +1,6 @@
 [package]
-name = "layla-log"
-version = "0.1.1"
+name = "layla_log"
+version = "0.1.0"
 edition = "2021"
 description = "A simple logger library."
 license = "MIT"
