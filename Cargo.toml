@@ -1,6 +1,6 @@
 [package]
 name = "layla-log"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "A simple logger library."
 license = "MIT"
@@ -17,3 +17,4 @@ opt-level = 0
 opt-level = 3
 
 [dependencies]
+chrono = "0.4.37"
