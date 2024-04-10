@@ -3,7 +3,6 @@
         "pymodule"
     ],
     "rust-analyzer.linkedProjects": [
-        ".\\Cargo.toml",
         ".\\Cargo.toml"
     ]
 }

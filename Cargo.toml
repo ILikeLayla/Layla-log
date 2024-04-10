@@ -1,0 +1,20 @@
+[package]
+name = "layla-log"
+version = "0.2.0"
+edition = "2021"
+description = "A simple logger library."
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "layla_log"
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+chrono = "0.4.37"
