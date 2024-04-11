@@ -12,8 +12,6 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
-<<<<<<< Updated upstream
-=======
 
 # Added by cargo
 /target
@@ -23,4 +21,3 @@ Cargo.lock
 
 # Files includes privacy
 /tests/write_in.rs
->>>>>>> Stashed changes
