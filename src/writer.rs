@@ -60,7 +60,7 @@ impl Writer {
             if msg.get_level() < restriction { continue; }
             if self.detailed_time { msg.set_detailed_time() } else { msg.set_rough_time() }
             self.write_single(&mut file, msg);
-            if self.used_length >= self.single_length { 
+            if self.used_length >= self.single_length && self.single_length != 0 { 
                 self.current_index += 1;
                 self.used_length = 0;
                 let file_path = self.dir_path.clone() + "\\" + &self.file_prefix.clone() + &self.current_index.to_string();
