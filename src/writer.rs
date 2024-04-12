@@ -83,6 +83,47 @@ impl Writer {
         self.current_index = 0;
     }
 
+    /// Record an info log.
+    pub fn info(&mut self, message: &str) {
+        self.record(LogLevel::Info, message);
+    }
+
+    /// Record a debug log.
+    pub fn debug(&mut self, message: &str) {
+        self.record(LogLevel::Debug, message);
+    }
+
+    /// Record a warn log.
+    pub fn warn(&mut self, message: &str) {
+        self.record(LogLevel::Warn, message);
+    }
+
+    /// Record an error log.
+    pub fn error(&mut self, message: &str) {
+        self.record(LogLevel::Error, message);
+    }
+
+    /// Record an info log.
+    pub fn info_buf(&mut self, message: &str) {
+        self.push(LogLevel::Info, message);
+    }
+
+    /// Record a debug log.
+    pub fn debug_buf(&mut self, message: &str) {
+        self.push(LogLevel::Debug, message);
+    }
+
+    /// Record a warn log.
+    pub fn warn_buf(&mut self, message: &str) {
+        self.push(LogLevel::Warn, message);
+    }
+
+    /// Record an error log.
+    pub fn error_buf(&mut self, message: &str) {
+        self.push(LogLevel::Error, message);
+    }
+
+
     fn write_single(&mut self, file: &mut File, msg: &LogMessage) {
         file.write_all((msg.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
         self.used_length += 1;
