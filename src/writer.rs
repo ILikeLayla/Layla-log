@@ -1,5 +1,5 @@
 use super::{msg::LogMessage, LogLevel};
-use std::{fs::File, io::Write};
+use std::{fs::{File, self}, io::Write};
 
 /// A writer for buffering the log and writing them into the suitable files.
 pub struct Writer {
@@ -74,6 +74,13 @@ impl Writer {
     pub fn record(&mut self, log_level: LogLevel, message: &str) {
         self.push(log_level, message);
         self.write_all();
+    }
+
+    /// Clear all the logs file in the aimed dictionary.
+    pub fn clear_dir(&mut self) {
+        fs::remove_dir_all(&self.dir_path).expect("Cannot remove the dir.");
+        fs::create_dir(&self.dir_path).expect("Cannot create the dir.");
+        self.current_index = 0;
     }
 
     fn write_single(&mut self, file: &mut File, msg: &LogMessage) {
