@@ -39,7 +39,7 @@ impl Writer {
         buffer.check_current_index();
         buffer
     }
-
+  
     /// Initialize the log writer with the default settings.
     pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, false, None, None, None) }
 
