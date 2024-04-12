@@ -39,7 +39,7 @@ impl Writer {
         buffer.check_current_index();
         buffer
     }
-
+  
     /// Initialize the log writer with the default settings.
     pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, false, None, None, None) }
 
@@ -75,7 +75,7 @@ impl Writer {
         self.push(log_level, message);
         self.write_all();
     }
-
+  
     fn write_single(&mut self, file: &mut File, msg: &LogMessage) {
         file.write_all((msg.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
         self.used_length += 1;
