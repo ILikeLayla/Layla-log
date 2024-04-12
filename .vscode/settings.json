@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
         "pymodule"
+    ],
+    "rust-analyzer.linkedProjects": [
+        ".\\Cargo.toml"
     ]
 }
