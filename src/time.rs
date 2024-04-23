@@ -5,7 +5,7 @@ use std::env;
 pub struct Time {
     utc: DateTime<Utc>,
     time_offset: FixedOffset,
-    pub detailed_display: bool, 
+    pub detailed_display: bool,
 }
 
 impl Time {
@@ -17,11 +17,11 @@ impl Time {
         Self::new(Utc::now(), FixedOffset::east_opt(time_zone * 3600).unwrap())
     }
 
-    pub fn now_auto_offset() -> Self {
-        let time_zone = env::var("TIME_ZONE").unwrap_or("0".to_string());
-        let time_zone = time_zone.parse::<i32>().unwrap();
-        Self::now(time_zone)
-    }
+    // pub fn now_auto_offset() -> Self {
+    //     let time_zone = env::var("TIME_ZONE").unwrap_or("0".to_string());
+    //     let time_zone = time_zone.parse::<i32>().unwrap();
+    //     Self::now(time_zone)
+    // }
 
     fn to_string(&self) -> String {
         let format = env::var("TIME_FORMAT").unwrap_or("%Y-%m-%d %H:%M:%S%.3f".to_string());

@@ -1,5 +1,5 @@
 use super::{msg::LogMessage, LogLevel};
-use std::{fs::{File, self}, io::Write};
+use std::{fs::{self, File}, io::Write};
 
 /// A writer for buffering the log and writing them into the suitable files.
 pub struct Writer {
@@ -7,64 +7,71 @@ pub struct Writer {
     dir_path: String,
     // the maximum number of logs in a single file.
     single_length: usize,
-    // the current number of logs in the file.
-    used_length: usize,
     // the current index of the file.
     current_index: usize,
     // a buffer for the log that are waiting to be written.
     log_buffer: Vec<LogMessage>,
-    // the standard prefix.
-    file_prefix: String,
     // define the minimum level of the log that should be written. (inclusive)
     log_level: LogLevel,
     // define to write the detailed time or not.
-    detailed_time: bool,
+    time_details: bool,
+    used_length: usize,
+    time_prefix: String,
+    file: Option<File>,
+    time_zone: i32
 }
 
+// %y-%m-%d-%i
 impl Writer {
     /// Customize and initialize the log writer.
-    pub fn new(dir_path: &str, detailed_time: bool, log_level: Option<LogLevel>, single_length_buffer: Option<usize>, prefix: Option<&str>) -> Writer {
-        let single_length = single_length_buffer.unwrap_or(1000);
-        let file_prefix = prefix.unwrap_or("LOG").to_string();
+    pub fn new(dir_path: &str, single_length: Option<usize>, log_level: Option<LogLevel>, time_zone: i32, time_details: bool) -> Writer {
+        let single_length = single_length.unwrap_or(200);
+        let time_prefix = format!("{}", chrono::Utc::now().format("%Y-%m-%d"));
         let mut buffer = Self {
             dir_path: dir_path.to_string(),
             single_length,
-            file_prefix,
-            used_length: 0,
-            current_index: 0,
+            current_index: 1,
             log_level: log_level.unwrap_or(LogLevel::Warn),
             log_buffer: Vec::with_capacity(single_length),
-            detailed_time
+            time_details,
+            time_prefix,
+            used_length: 0,
+            file: None,
+            time_zone
         };
-        buffer.check_current_index();
+        buffer.current_index = buffer.get_index(&buffer.time_prefix);
+        buffer.file = Some(buffer.get_file());
         buffer
     }
   
     /// Initialize the log writer with the default settings.
-    pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, false, None, None, None) }
+    pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, None, None, 0, false) }
 
     /// Push a log into the buffer.
     pub fn push(&mut self, log_level: LogLevel, message: &str) {
-        let log_message = LogMessage::new(log_level, message.to_string());
+        let log_message = LogMessage::new(log_level, message.to_string(), self.time_zone);
         self.log_buffer.push(log_message);
     }
 
-
+    pub fn clear_dir(&mut self) {
+        fs::remove_dir_all(&self.dir_path).expect("Cannot remove the dir.");
+        fs::create_dir(&self.dir_path).expect("Cannot create the dir.");
+        self.current_index = 0;
+        self.used_length = 0;
+        self.file = Some(self.get_file())
+    }
     /// Write all the logs in the buffer into the files.
     /// and also clear the buffer.
     pub fn write_all(&mut self) {
         let restriction = self.log_level as usize;
-        let file_path = self.dir_path.clone() + "\\" + &self.file_prefix.clone() + &self.current_index.to_string();
-        let mut file = File::create(file_path).expect("Cannot create the log file.");
         for msg in self.log_buffer.clone().iter_mut() {
             if msg.get_level() < restriction { continue; }
-            if self.detailed_time { msg.set_detailed_time() } else { msg.set_rough_time() }
-            self.write_single(&mut file, msg);
+            if self.time_details { msg.set_detailed_time() } else { msg.set_rough_time() }
+            self.write_single(msg);
             if self.used_length >= self.single_length && self.single_length != 0 { 
                 self.current_index += 1;
                 self.used_length = 0;
-                let file_path = self.dir_path.clone() + "\\" + &self.file_prefix.clone() + &self.current_index.to_string();
-                file = File::create(file_path).expect("Cannot create the log file.");
+                self.file = Some(self.get_file());
             }
         }
         self.log_buffer.clear();
@@ -74,13 +81,6 @@ impl Writer {
     pub fn record(&mut self, log_level: LogLevel, message: &str) {
         self.push(log_level, message);
         self.write_all();
-    }
-
-    /// Clear all the logs file in the aimed dictionary.
-    pub fn clear_dir(&mut self) {
-        fs::remove_dir_all(&self.dir_path).expect("Cannot remove the dir.");
-        fs::create_dir(&self.dir_path).expect("Cannot create the dir.");
-        self.current_index = 0;
     }
 
     /// Record an info log.
@@ -103,42 +103,38 @@ impl Writer {
         self.record(LogLevel::Error, message);
     }
 
-    /// Record an info log.
-    pub fn info_buf(&mut self, message: &str) {
-        self.push(LogLevel::Info, message);
+    fn write_single(&mut self, msg: &LogMessage) {
+        for i in msg.split_enter() {
+            let time_prefix = format!("{}", chrono::Utc::now().format("%Y-%m-%d"));
+            if self.time_prefix != time_prefix {
+                self.time_prefix = time_prefix;
+                self.current_index = 0;
+                self.used_length = 0;
+                self.file = Some(self.get_file());
+            };
+            self.file.as_mut().unwrap().write_all((i.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
+            self.used_length += 1;
+        }
     }
 
-    /// Record a debug log.
-    pub fn debug_buf(&mut self, message: &str) {
-        self.push(LogLevel::Debug, message);
-    }
-
-    /// Record a warn log.
-    pub fn warn_buf(&mut self, message: &str) {
-        self.push(LogLevel::Warn, message);
-    }
-
-    /// Record an error log.
-    pub fn error_buf(&mut self, message: &str) {
-        self.push(LogLevel::Error, message);
-    }
-
-
-    fn write_single(&mut self, file: &mut File, msg: &LogMessage) {
-        file.write_all((msg.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
-        self.used_length += 1;
-    }
-
-    fn check_current_index(&mut self) {
-        let mut buffer = 0;
+    fn get_index(&self, time_prefix: &str) -> usize {
+        let mut count = 1;
         loop {
-            let file_path = self.dir_path.clone() + "\\" + &self.file_prefix.clone() + &buffer.to_string();
-            if File::open(file_path).is_ok() {
-                buffer += 1;
-            } else {
-                self.current_index = buffer;
-                break;
+            let path = self.get_path(time_prefix, count);
+            if let Ok(_) = File::open(path) { count += 1 }
+            else {
+                // let _ = File::create(self.get_path(&self.time_prefix, count)).expect("Cannot create the log file.");
+                return count
             }
         }
+    }
+
+    fn get_path(&self, time_prefix: &str, index: usize) -> String {
+        format!("{}\\{}-{}.log", self.dir_path, time_prefix, index)
+    }
+
+    fn get_file(&self) -> File {
+        let path = self.get_path(&self.time_prefix, self.current_index);
+        File::options().read(true).write(true).create_new(true).open(path).expect("Cannot create the log file.")
     }
 }
