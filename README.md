@@ -6,34 +6,51 @@ A simple logger library. This library provides a simple log writer and simple lo
 
 This can be initialized by using default setting, only the path of the aim dictionary is needed. 
 ```rust
-use layla_log::{Writer, LogLevel};
+use layla_log::*;
 
 fn main() {
-    let mut writer = Writer::default("AIMED_DICTIONARY");
-    writer.record(LogLevel::Error, "This is an error log.");
-    writer.record(LogLevel::Warn, "This is a warning log.");
-    writer.record(LogLevel::Debug, "This is a debug log.");
-    writer.record(LogLevel::Info, "This is an info log.");
+    default_init("path/to/log/directory/");
+    clean_log(); // This will clean the log file.
+    error!("error message.");
+    warn!("warn message.");
+    debug!("debug message.");
+    info!("info message.");
 }
 ```
 
+And this will be the output in the log file.
+```log
+{time} ERROR error message.
+{time} WARN warn message.
+```
+(Because the default log level is WARN, so the log with the level which is lower than WARN will not be recorded.)
+
+And the time format is "yyyy-MM-dd HH:mm:ss.SSS". (The millisecond is included.)
+
 It also provides a function for personal initializing, the following can be decided.
 - The path of the aim dictionary.
-- The restriction of the log level.
-- Show detailed time or not.
 - Maximum number of log in a single file. (0 as inf.)
-- Prefix of the log file.
-
-Sometimes, a large amount of logs would be written. Then, the function `record` is not recommended. Instead, the combination of functions  `push` and `write_all` should be used.
+- The restriction of the log level.
+- Time zone.
+- Show detailed time or not.
  
 ```rust
-use layla_log::{Writer, LogLevel};
+use layla_log::*;
 
 fn main() {
-    let mut writer = Writer::default("AIMED_DICTIONARY");
-    for _ in 0..1_000_000 {
-        writer.push(LogLevel::Info, "This is an info log.");
-    }
-    writer.write_all();
+    init("path/to/log/directory/", Some(200), Some(LogLevel::Debug) , 0, false);
+    clean_log();
+    error!("error message.");
+    warn!("warn message.");
+    debug!("debug message.");
+    info!("info message.");
 }
+```
+
+And this will be the output.
+```log
+{time} ERROR error message.
+{time} WARN warn message.
+{time} DEBUG debug message.
+{time} INFO info message.
 ```

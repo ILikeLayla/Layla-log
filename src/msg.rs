@@ -8,11 +8,11 @@ pub struct LogMessage {
 }
 
 impl LogMessage {
-    pub fn new(level: LogLevel, message: String) -> Self {
+    pub fn new(level: LogLevel, message: String, time_zone:i32) -> Self {
         Self {
             level,
             message,
-            time: Time::now_auto_offset(),
+            time: Time::now(time_zone),
         }
     }
 
@@ -30,5 +30,17 @@ impl LogMessage {
 
     pub fn get_level(&self) -> usize {
         self.level as usize
+    }
+
+    pub fn split_enter(&self) -> Vec<Self> {
+        let mut messages = Vec::new();
+        for line in self.message.lines() {
+            messages.push(Self {
+                level: self.level.clone(),
+                message: line.to_string(),
+                time: self.time.clone(),
+            });
+        }
+        messages
     }
 }
