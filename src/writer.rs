@@ -18,13 +18,14 @@ pub struct Writer {
     used_length: usize,
     time_prefix: String,
     file: Option<File>,
-    time_zone: i32
+    time_zone: i32,
+    print_out: bool,
 }
 
 // %y-%m-%d-%i
 impl Writer {
     /// Customize and initialize the log writer.
-    pub fn new(dir_path: &str, single_length: Option<usize>, log_level: Option<LogLevel>, time_zone: i32, time_details: bool) -> Writer {
+    pub fn new(dir_path: &str, single_length: Option<usize>, log_level: Option<LogLevel>, time_zone: i32, time_details: bool, print_out: bool) -> Writer {
         let single_length = single_length.unwrap_or(200);
         let time_prefix = format!("{}", chrono::Utc::now().format("%Y-%m-%d"));
         let mut buffer = Self {
@@ -37,7 +38,8 @@ impl Writer {
             time_prefix,
             used_length: 0,
             file: None,
-            time_zone
+            time_zone,
+            print_out
         };
         buffer.current_index = buffer.get_index(&buffer.time_prefix);
         buffer.file = Some(buffer.get_file());
@@ -45,7 +47,7 @@ impl Writer {
     }
   
     /// Initialize the log writer with the default settings.
-    pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, None, None, 0, false) }
+    pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, None, None, 0, false, true) }
 
     /// Push a log into the buffer.
     pub fn push(&mut self, log_level: LogLevel, message: &str) {
@@ -117,6 +119,7 @@ impl Writer {
                 self.used_length = 0;
                 self.file = Some(self.get_file());
             };
+            if self.print_out { println!("{}", i.print()) };
             self.file.as_mut().unwrap().write_all((i.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
             self.used_length += 1;
         }
