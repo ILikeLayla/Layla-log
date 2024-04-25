@@ -31,7 +31,7 @@ impl Writer {
             dir_path: dir_path.to_string(),
             single_length,
             current_index: 1,
-            log_level: log_level.unwrap_or(LogLevel::Warn),
+            log_level: log_level.unwrap_or(LogLevel::Trace),
             log_buffer: Vec::with_capacity(single_length),
             time_details,
             time_prefix,
@@ -101,6 +101,11 @@ impl Writer {
     /// Record an error log.
     pub fn error(&mut self, message: &str) {
         self.record(LogLevel::Error, message);
+    }
+
+    /// Record a trace log.
+    pub fn trace(&mut self, message: &str) {
+        self.record(LogLevel::Trace, message);
     }
 
     fn write_single(&mut self, msg: &LogMessage) {

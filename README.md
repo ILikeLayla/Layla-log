@@ -13,8 +13,9 @@ fn main() {
     clean_log(); // This will clean the log file.
     error!("error message.");
     warn!("warn message.");
-    debug!("debug message.");
     info!("info message.");
+    debug!("debug message.");
+    trace!("trace message.");
 }
 ```
 
@@ -22,8 +23,11 @@ And this will be the output in the log file.
 ```log
 {time} ERROR error message.
 {time} WARN warn message.
+{time} DEBUG debug message.
+{time} INFO info message.
+{time} TRACE trace message.
 ```
-(Because the default log level is WARN, so the log with the level which is lower than WARN will not be recorded.)
+(Because the default log level is TRACE, so all the log will be recorded.)
 
 And the time format is "yyyy-MM-dd HH:mm:ss.SSS". (The millisecond is included.)
 
@@ -42,8 +46,9 @@ fn main() {
     clean_log();
     error!("error message.");
     warn!("warn message.");
-    debug!("debug message.");
     info!("info message.");
+    debug!("debug message.");
+    trace!("trace message.");
 }
 ```
 
@@ -51,6 +56,6 @@ And this will be the output.
 ```log
 {time} ERROR error message.
 {time} WARN warn message.
-{time} DEBUG debug message.
 {time} INFO info message.
+{time} DEBUG debug message.
 ```

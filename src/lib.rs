@@ -81,15 +81,23 @@ macro_rules! debug {
     };
 }
 
+#[macro_export]
+macro_rules! trace {
+    ($($arg:tt)*) => {
+        unsafe { $crate::LOGGER.as_mut().expect("The logger haven't been initialized.").lock().unwrap().trace(&format!($($arg)*)) };
+    };
+}
+
 /// Enumeration of log levels.
 /// This defines the emergency of the log.
 /// (the corresponding number is used to compare the log level to decide write to the log file or not.)
 #[derive(Copy, Clone)]
 pub enum LogLevel {
-    Debug = 0,
-    Info = 1,
-    Warn = 2,
-    Error = 3,
+    Trace = 0,
+    Debug = 1,
+    Info = 2,
+    Warn = 3,
+    Error = 4,
 }
 
 impl std::fmt::Display for LogLevel {
@@ -99,6 +107,7 @@ impl std::fmt::Display for LogLevel {
             LogLevel::Debug => write!(f, "DEBUG"),
             LogLevel::Warn => write!(f, "WARN"),
             LogLevel::Error => write!(f, "ERROR"),
+            LogLevel::Trace => write!(f, "TRACE"),
         }
     }
 }
