@@ -16,8 +16,8 @@ pub fn default_init(dir_path: &str) {
 
 
 /// Initialize the static logger with customized setting.
-pub fn init(dir_path: &str, single_length: Option<usize>, log_level: Option<LogLevel>, time_zone: i32, time_details: bool, print_out: bool) {
-    _init_block(Writer::new(dir_path, single_length, log_level, time_zone, time_details, print_out))
+pub fn init(dir_path: &str, single_length: usize, file_record: Option<LogLevel>, terminal_print: Option<LogLevel>, time_zone: i32, time_details: bool, print_out: bool) {
+    _init_block(Writer::new(dir_path, single_length, file_record, terminal_print, time_zone, time_details, print_out))
 }
 
 // A function provide a easier way to initialize the static logger by checking and replacing the writer in the static cell.
@@ -109,5 +109,11 @@ impl std::fmt::Display for LogLevel {
             LogLevel::Error => write!(f, "ERROR"),
             LogLevel::Trace => write!(f, "TRACE"),
         }
+    }
+}
+
+impl LogLevel {
+    pub fn get_level(&self) -> usize {
+        *self as usize
     }
 }

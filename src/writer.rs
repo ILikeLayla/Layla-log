@@ -12,7 +12,8 @@ pub struct Writer {
     // a buffer for the log that are waiting to be written.
     log_buffer: Vec<LogMessage>,
     // define the minimum level of the log that should be written. (inclusive)
-    log_level: LogLevel,
+    file_record: LogLevel,
+    terminal_print: LogLevel,
     // define to write the detailed time or not.
     time_details: bool,
     used_length: usize,
@@ -22,17 +23,16 @@ pub struct Writer {
     print_out: bool,
 }
 
-// %y-%m-%d-%i
 impl Writer {
     /// Customize and initialize the log writer.
-    pub fn new(dir_path: &str, single_length: Option<usize>, log_level: Option<LogLevel>, time_zone: i32, time_details: bool, print_out: bool) -> Writer {
-        let single_length = single_length.unwrap_or(200);
+    pub fn new(dir_path: &str, single_length: usize, file_record: Option<LogLevel>, terminal_print: Option<LogLevel>, time_zone: i32, time_details: bool, print_out: bool) -> Writer {
         let time_prefix = format!("{}", chrono::Utc::now().format("%Y-%m-%d"));
         let mut buffer = Self {
             dir_path: dir_path.to_string(),
             single_length,
             current_index: 1,
-            log_level: log_level.unwrap_or(LogLevel::Trace),
+            file_record: file_record.unwrap_or(LogLevel::Trace),
+            terminal_print: terminal_print.unwrap_or(LogLevel::Debug),
             log_buffer: Vec::with_capacity(single_length),
             time_details,
             time_prefix,
@@ -47,7 +47,7 @@ impl Writer {
     }
   
     /// Initialize the log writer with the default settings.
-    pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, None, None, 0, false, true) }
+    pub fn default(dir_path: &str) -> Writer { Writer::new(dir_path, 200, None, None, 0, false, true) }
 
     /// Push a log into the buffer.
     pub fn push(&mut self, log_level: LogLevel, message: &str) {
@@ -65,9 +65,7 @@ impl Writer {
     /// Write all the logs in the buffer into the files.
     /// and also clear the buffer.
     pub fn write_all(&mut self) {
-        let restriction = self.log_level as usize;
         for msg in self.log_buffer.clone().iter_mut() {
-            if msg.get_level() < restriction { continue; }
             if self.time_details { msg.set_detailed_time() } else { msg.set_rough_time() }
             self.write_single(msg);
             if self.used_length >= self.single_length && self.single_length != 0 { 
@@ -119,9 +117,11 @@ impl Writer {
                 self.used_length = 0;
                 self.file = Some(self.get_file());
             };
-            if self.print_out { println!("{}", i.print()) };
-            self.file.as_mut().unwrap().write_all((i.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
-            self.used_length += 1;
+            if self.print_out && self.terminal_print.get_level() <= i.get_level() { println!("{}", i.print()) };
+            if self.file_record.get_level() <= i.get_level() {
+                self.file.as_mut().unwrap().write_all((i.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
+                self.used_length += 1;
+            };
         }
     }
 
