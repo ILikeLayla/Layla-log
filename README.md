@@ -28,7 +28,7 @@ And this is an example:
 use layla_log::*;
 
 fn main() {
-   init("/path/to/dir", 1219, LogLevel::Trace, LogLevel::Debug, 0, true, true);
+    init("/path/to/dir", 1219, LogLevel::Trace, LogLevel::Debug, 0, true, true);
     error!("This is an error message");
     warn!("This is a warning message");
     debug!("This is a debug message");
