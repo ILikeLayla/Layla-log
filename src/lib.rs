@@ -1,3 +1,7 @@
+//! A simple logger library. This library provides a simple log writer and simple log level control. 
+//! It can be used to write logs in a program. The logs can be written to the aimed dictionary. 
+//! The log level can be set to different levels (Error, Warn, Debug, and Info).
+
 mod msg;
 mod time;
 mod logger;
