@@ -16,8 +16,6 @@ Cargo.lock
 # Added by cargo
 /target
 
-# Test cache
-/test_cache/
-
-# Files includes privacy
-/tests/write_in.rs
+# logs
+*.log
+/logs
