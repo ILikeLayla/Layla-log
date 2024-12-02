@@ -75,7 +75,7 @@ Here is an example using `default_init()`:
 use layla_log::*;
 
 fn main() {
-    init("/path/to/dir"); // dir_path is still needed
+    default_init("/path/to/dir"); // dir_path is still needed
     error!("This is an error message");
     warn!("This is a warning message");
     debug!("This is a debug message");
