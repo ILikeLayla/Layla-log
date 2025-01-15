@@ -1,5 +1,7 @@
 {
     "rust-analyzer.linkedProjects": [
         ".\\Cargo.toml"
-    ]
+    ],
+    "Codegeex.RepoIndex": true,
+    "Codegeex.Chat.LanguagePreference": "English"
 }

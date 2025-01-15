@@ -1,14 +1,14 @@
 use chrono::{DateTime, FixedOffset, Utc};
 
-#[derive(Clone)]
-pub struct Time {
+#[derive(Clone, Debug)]
+pub(crate) struct Time {
     // UTC time
     utc: DateTime<Utc>,
     // Time zone offset
     time_offset: FixedOffset,
     // Whether to display detailed time information
     // (whether to display the time zone offset)
-    pub detailed_display: bool,
+    pub(crate) detailed_display: bool,
 }
 
 impl Time {
@@ -45,3 +45,5 @@ impl std::fmt::Display for Time {
         write!(f, "{}", s)
     }
 }
+
+unsafe impl Send for Time {}

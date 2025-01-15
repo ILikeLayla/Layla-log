@@ -1,13 +1,13 @@
 use super::{time::Time, LogLevel};
 
-#[derive(Clone)]
-pub struct LogMessage {
+#[derive(Clone, Debug)]
+pub(crate) struct LogMessage {
     // level of the log
     level: LogLevel,
     // message of the log
     message: String,
     // time of the log
-    time: Time,
+    pub(crate) time: Time,
 }
 
 impl LogMessage {
@@ -19,16 +19,6 @@ impl LogMessage {
             message,
             time: Time::now(time_zone),
         }
-    }
-
-    /// Sets the time of the log to detailed display
-    pub fn set_detailed_time(&mut self) {
-        self.time.detailed_display = true;
-    }
-
-    /// Sets the time of the log to rough display
-    pub fn set_rough_time(&mut self) {
-        self.time.detailed_display = false;
     }
 
     /// Formatting the log message
@@ -55,3 +45,5 @@ impl LogMessage {
         messages
     }
 }
+
+unsafe impl Send for LogMessage {}
