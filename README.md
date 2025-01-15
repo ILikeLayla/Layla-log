@@ -1,13 +1,13 @@
 # Layla-log
 
-A simple logger library. This library provides a simple log writer and simple log level control. It can record logs to a target directory and also print them to terminal. The log can be set to different levels (Error, Warn, Debug, Info and Trace). And only the logs with significant level will be recorded to file or printed to terminal. Moreover, when the log file size exceeds a certain limit, it will automatically route to new files with indexing.
+A simple logger library. This library provides a simple log writer and simple log-level control. It can record logs to a target directory and also print them to the terminal. The log can be set to different levels (Error, Warn, Debug, Info and Trace). Only the logs with significant levels will be recorded to file or printed to the terminal. Moreover, when the log file size exceeds a certain limit, it will automatically route to new files with indexing.
 
 ## Features list
 - async (details see [async](./doc/async.md))
 
 ## Usage
 
-Macros are provided to use the log writer easily, but before it here are several setting for the writer:
+Macros are provided to use the log writer easily, but before it here are several settings for the writer:
 
 - dir_path
   - where the log file will be saved
@@ -15,20 +15,20 @@ Macros are provided to use the log writer easily, but before it here are several
 - single_length
   - the maximum length of a single log file (0 as unlimited)
 - file_record_level
-  - the minimum level of log that will be recorded to file
+  - the minimum level of log that will be recorded to a file
 - terminal_print_level
-  - the minimum level of log that will be printed to terminal
+  - the minimum level of log that will be printed to the terminal
 - time_zone
   - the time zone of the log file name and log message time
 - time_detailed_display
   - whether to display detailed time in log message (whether time zone is included)
 - print_out
-  - whether to print log to terminal
+  - whether to print the log to terminal
 - disabled
   - whether disable the logger or not
 
 
-And this is an example:
+This is an example:
 
 ```rust
 use layla_log::*;
@@ -71,7 +71,7 @@ and these are the output in the terminal:
 {TIME} (+00:00) INFO   This is an info message
 ```
 
-Furthermore, all the setting have a default value:
+Furthermore, all the settings have a default value:
 - `"./logs/"` as the default dir_path
 - `0` as the default log file single_length
 - `LogLevel::Trace` as the default file_recode_level
@@ -82,7 +82,7 @@ Furthermore, all the setting have a default value:
 - `false` as the default disabled
 
 These default settings can be used by:
-- Using default setting to initialize the logger
+- Using the default setting to initialize the logger
 - No explicit initialization.
 
 Here is an example using `default_init()`:
@@ -144,7 +144,7 @@ fn main() {
 }
 ```
 
-And also, if some setting will be changed after while, then a `set` method can be used. (details see [init and set](./doc/init_and_set.md))
+And also, if some setting changes after a while, then a `set` method can be used. (details see [init and set](./doc/init_and_set.md))
 
 ```rust
 use layla_log::{init, set, Setting};
@@ -162,7 +162,7 @@ fn main() {
 }
 ```
 
-And if, the logger will be disabled and then enabled after some codes, then `disable_log` and `enable_log` method can be used.
+If the logger is disabled and then enabled after some codes, then the `disable_log` and `enable_log` methods can be used.
 
 ```rust
 use layla_log::*;
@@ -188,7 +188,7 @@ fn main() {
 }
 ```
 
-And if, you may want to announce the level by yourself instead of using corresponding macro, then you can use `log!` macro.
+If you want to announce the level yourself instead of using the corresponding macro, you can use the `log!` macro.
 
 ```rust
 use layla_log::*;
@@ -206,7 +206,7 @@ fn main() {
 - `disable_log()`
 - `enable_log()`
 
-## Maceo list
+## Macro list
 
 - `trace!`
 - `info!`
@@ -218,4 +218,4 @@ fn main() {
 ## Cases
 
 ### Double Initialization
-This happens when `init()` or `default_init()` is called more than once. In this case, logger won't be initialized again, but a warn log will be recorded (printed) with content `"Log writer has been initialized!"`.
+This happens when `init()` or `default_init()` is called more than once. In this case, the logger won't be initialized again, but a warning log will be recorded (printed) with the content `"Log writer has been initialized!"`.
