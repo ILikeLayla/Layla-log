@@ -29,6 +29,28 @@ lazy_static! {
     pub static ref LOGGER: Mutex<Logger> = Mutex::new(Logger::new());
 }
 
+#[macro_export]
+macro_rules! func {
+    () => {{
+        fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+        let name = type_name_of(f);
+        name.strip_suffix("::{{closure}}::f").unwrap()
+    }};
+}
+
+#[macro_export]
+macro_rules! position {
+    () => {{
+        let function = $crate::func!();
+        let file = file!();
+        let line = line!();
+        format!("{} {}:{}", function, file, line)
+    }}
+}
+
 #[cfg(feature = "async")]
 mod async_log {
     use super::*;
@@ -68,7 +90,8 @@ mod async_log {
     #[macro_export]
     macro_rules! error {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().await.error(format!($($arg)*).as_str()).await;
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().await.error(format!($($arg)*).as_str(), position).await;
         };
     }
 
@@ -77,7 +100,8 @@ mod async_log {
     #[macro_export]
     macro_rules! warn {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().await.warn(format!($($arg)*).as_str()).await;
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().await.warn(format!($($arg)*).as_str(), position).await;
         };
     }
 
@@ -86,7 +110,8 @@ mod async_log {
     #[macro_export]
     macro_rules! info {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().await.info(format!($($arg)*).as_str()).await;
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().await.info(format!($($arg)*).as_str(), position).await;
         };
     }
 
@@ -95,7 +120,8 @@ mod async_log {
     #[macro_export]
     macro_rules! debug {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().await.debug(format!($($arg)*).as_str()).await;
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().await.debug(format!($($arg)*).as_str(), position).await;
         };
     }
 
@@ -104,7 +130,8 @@ mod async_log {
     #[macro_export]
     macro_rules! trace {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().await.trace(format!($($arg)*).as_str()).await;
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().await.trace(format!($($arg)*).as_str(), position).await;
         };
     }
 
@@ -113,7 +140,8 @@ mod async_log {
     macro_rules! log {
         // Match the macro invocation with a level expression and a variable number of arguments
         ($level:expr, $($arg:tt)*) => {
-            $crate::LOGGER.lock().await.record($level, &format!($($arg)*)).await;
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().await.record($level, &format!($($arg)*), position).await;
         }
     }
 

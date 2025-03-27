@@ -1,3 +1,5 @@
+use crate::func;
+
 use super::{msg::LogMessage, LogLevel, Setting};
 use chrono::FixedOffset;
 #[cfg(not(feature = "async"))]
@@ -94,7 +96,8 @@ impl Logger {
     /// Customize and initialize the log writer.
     pub(crate) async fn init(&mut self, setting: Setting) {
         if self.init {
-            self.warn("Log writer had been initialized!").await;
+            let position = func!().to_string();
+            self.warn("Log writer had been initialized!", position).await;
             return;
         }
 
@@ -186,38 +189,38 @@ impl Logger {
     }
 
     /// provide a method to log something by only a given string and [`LogLevel`].
-    pub async fn record(&mut self, log_level: LogLevel, message: &str) {
+    pub async fn record(&mut self, log_level: LogLevel, message: &str, position: String) {
         if !self.init {
             self.init = true
         }
-        let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone);
+        let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone, position);
         msg.time.detailed_display = self.setting.time_detailed_display;
         self.write(&msg).await;
     }
 
     /// Record an info log.
-    pub async fn info(&mut self, message: &str) {
-        self.record(LogLevel::Info, message).await;
+    pub async fn info(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Info, message, position).await;
     }
 
     /// Record a debug log.
-    pub async fn debug(&mut self, message: &str) {
-        self.record(LogLevel::Debug, message).await;
+    pub async fn debug(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Debug, message, position).await;
     }
 
     /// Record a warn log.
-    pub async fn warn(&mut self, message: &str) {
-        self.record(LogLevel::Warn, message).await;
+    pub async fn warn(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Warn, message, position).await;
     }
 
     /// Record an error log.
-    pub async fn error(&mut self, message: &str) {
-        self.record(LogLevel::Error, message).await;
+    pub async fn error(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Error, message, position).await;
     }
 
     /// Record a trace log.
-    pub async fn trace(&mut self, message: &str) {
-        self.record(LogLevel::Trace, message).await;
+    pub async fn trace(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Trace, message, position).await;
     }
 
     /// Get the file object of the log file.

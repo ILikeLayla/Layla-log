@@ -29,7 +29,7 @@ mod bench {
                     clean_log().await;
                     let mut handles = Vec::new();
                     for _ in 0..10_000 {
-                        handles.push(tokio::spawn(async { info!("Hello, world!") }))
+                        handles.push(tokio::spawn(async { info().await }))
                     }
                     for handle in handles {
                         handle.await.unwrap();
@@ -39,6 +39,10 @@ mod bench {
                 rt.block_on(task());
             })
         });
+    }
+
+    async fn info() {
+        info!("Hello, world!");
     }
 }
 
