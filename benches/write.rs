@@ -1,11 +1,11 @@
 #![feature(test)]
 
 extern crate test;
-use criterion::{Criterion, criterion_group, criterion_main};
-#[cfg(feature = "async")]
-use tokio::time::Duration;
+use criterion::{criterion_group, criterion_main, Criterion};
 #[cfg(not(feature = "async"))]
 use std::time::Duration;
+#[cfg(feature = "async")]
+use tokio::time::Duration;
 
 #[cfg(feature = "async")]
 mod bench {
@@ -18,10 +18,10 @@ mod bench {
             .build()
             .unwrap()
     }
-    
+
     pub fn write_a_lot(c: &mut Criterion) {
         let rt = rt();
-    
+
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
                 let task = || async {
@@ -29,25 +29,27 @@ mod bench {
                     clean_log().await;
                     let mut handles = Vec::new();
                     for _ in 0..10_000 {
-                        handles.push(tokio::spawn(async {
-                            info!("Hello, world!")
-                        }))
+                        handles.push(tokio::spawn(async { info().await }))
                     }
                     for handle in handles {
                         handle.await.unwrap();
                     }
                 };
-    
+
                 rt.block_on(task());
             })
         });
+    }
+
+    async fn info() {
+        info!("Hello, world!");
     }
 }
 
 #[cfg(not(feature = "async"))]
 mod bench {
     use criterion::Criterion;
-    use layla_log::{init, clean_log, info, Setting};
+    use layla_log::{clean_log, info, init, Setting};
 
     pub fn write_a_lot(c: &mut Criterion) {
         c.bench_function("write_a_lot", |b| {
@@ -57,7 +59,7 @@ mod bench {
                 let mut handles = Vec::new();
                 for _ in 0..10_000 {
                     handles.push(std::thread::spawn(|| {
-                        info!("Hello, world!")
+                        info!("Hello, world!");
                     }))
                 }
                 for handle in handles {

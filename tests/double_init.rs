@@ -12,7 +12,7 @@ fn double_init() {
         dir_path: "./logs".to_string(),
         ..Default::default()
     });
-    
+
     error!("error");
     warn!("warn");
     info!("info");
@@ -26,13 +26,15 @@ async fn double_init() {
     init(Setting {
         dir_path: "./logs".to_string(),
         ..Default::default()
-    }).await;
+    })
+    .await;
 
     init(Setting {
         dir_path: "./logs".to_string(),
         ..Default::default()
-    }).await;
-    
+    })
+    .await;
+
     error!("error");
     warn!("warn");
     info!("info");
