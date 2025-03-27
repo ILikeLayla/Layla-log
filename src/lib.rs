@@ -1,27 +1,27 @@
-//! A simple logger library. This library provides a simple log writer and simple log level control. 
-//! It can be used to write logs in a program. The logs can be written to a dictionary. 
+//! A simple logger library. This library provides a simple log writer and simple log level control.
+//! It can be used to write logs in a program. The logs can be written to a dictionary.
 //! The log level can be set to different levels (Error, Warn, Debug, Info and Trace).
 
-mod msg;
-mod time;
 mod logger;
+mod msg;
 mod setting;
+mod time;
 
 pub use logger::*;
 pub use setting::Setting;
 
-#[cfg(not(feature = "async"))]
-pub use log::*;
 #[cfg(feature = "async")]
 pub use async_log::*;
+#[cfg(not(feature = "async"))]
+pub use log::*;
 
 use lazy_static::lazy_static;
-#[cfg(feature = "async")]
-use tokio::sync::Mutex;
 #[cfg(not(feature = "async"))]
 use std::sync::Mutex;
 #[cfg(feature = "async")]
 use tokio;
+#[cfg(feature = "async")]
+use tokio::sync::Mutex;
 
 lazy_static! {
     /// The static logger.
@@ -125,7 +125,7 @@ mod async_log {
         // Call the `enable` method on the locked writer to enable logging
         writer.enable();
     }
-    
+
     /// Define a public asynchronous function named `disable_log`
     pub async fn disable_log() {
         // Acquire a mutable lock on the LOGGER, which is presumably a globally accessible logging mechanism
@@ -219,7 +219,7 @@ mod log {
         // Enable logging using the writer
         writer.enable();
     }
-    
+
     /// Public function to disable logging
     pub fn disable_log() {
         // Lock the LOGGER to ensure thread-safe access

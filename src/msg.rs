@@ -11,9 +11,8 @@ pub(crate) struct LogMessage {
 }
 
 impl LogMessage {
-
     /// Creates a new log message
-    pub fn new(level: LogLevel, message: String, time_zone:i32) -> Self {
+    pub fn new(level: LogLevel, message: String, time_zone: i32) -> Self {
         Self {
             level,
             message,

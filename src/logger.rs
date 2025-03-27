@@ -1,13 +1,13 @@
 use super::{msg::LogMessage, LogLevel, Setting};
 use chrono::FixedOffset;
-#[cfg(feature = "async")]
-use tokio::io::AsyncWriteExt;
-#[cfg(feature = "async")]
-use tokio::fs::{self, File};
-#[cfg(not(feature = "async"))]
-use std::io::Write;
 #[cfg(not(feature = "async"))]
 use std::fs::{self, File};
+#[cfg(not(feature = "async"))]
+use std::io::Write;
+#[cfg(feature = "async")]
+use tokio::fs::{self, File};
+#[cfg(feature = "async")]
+use tokio::io::AsyncWriteExt;
 
 /// A writer for buffering the log and writing them into the suitable files.
 #[derive(Debug)]
@@ -38,8 +38,13 @@ impl Logger {
             current_index: 0,
             used_length: 0,
             init: false,
-            current_file_prefix: format!("{}", chrono::Utc::now().with_timezone(&FixedOffset::east_opt(setting.time_zone * 3600).unwrap()).format(&setting.file_time_format)),
-            setting
+            current_file_prefix: format!(
+                "{}",
+                chrono::Utc::now()
+                    .with_timezone(&FixedOffset::east_opt(setting.time_zone * 3600).unwrap())
+                    .format(&setting.file_time_format)
+            ),
+            setting,
         };
         buffer.check_dir();
         buffer.current_index = buffer.get_index_not_async(&buffer.current_file_prefix);
@@ -68,10 +73,10 @@ impl Logger {
         loop {
             let path = self.get_path(time_prefix, count);
             // if the file exists, then the index is the next one
-            if let Ok(_) = std::fs::File::open(path) { 
+            if let Ok(_) = std::fs::File::open(path) {
                 count += 1
             } else {
-                return count
+                return count;
             }
         }
     }
@@ -82,7 +87,6 @@ impl Logger {
             std::fs::create_dir(&self.setting.dir_path).expect("Failed to create directory");
         }
     }
-
 }
 
 #[cfg(feature = "async")]
@@ -114,8 +118,12 @@ impl Logger {
 
     /// clear the log directory. (remove all the log files in the directory)
     pub(crate) async fn clear_dir(&mut self) {
-        fs::remove_dir_all(&self.setting.dir_path).await.expect("Cannot remove the dir.");
-        fs::create_dir(&self.setting.dir_path).await.expect("Cannot create the dir.");
+        fs::remove_dir_all(&self.setting.dir_path)
+            .await
+            .expect("Cannot remove the dir.");
+        fs::create_dir(&self.setting.dir_path)
+            .await
+            .expect("Cannot create the dir.");
         self.current_index = 0;
         self.used_length = 0;
         self.file = None;
@@ -128,14 +136,19 @@ impl Logger {
             return;
         }
 
-        if self.file.is_none() {
-            self.file = Some(self.get_file().await);
-        }
-
         for i in msg.split_enter() {
+            if self.file.is_none() {
+                self.file = Some(self.get_file().await);
+            }
+
             // check if the time prefix has changed
             // (when a new day begins)
-            let time_prefix = format!("{}", chrono::Utc::now().with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap()).format("%Y-%m-%d"));
+            let time_prefix = format!(
+                "{}",
+                chrono::Utc::now()
+                    .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                    .format("%Y-%m-%d")
+            );
             if self.current_file_prefix != time_prefix {
                 self.current_file_prefix = time_prefix;
                 self.current_index = 0;
@@ -145,12 +158,21 @@ impl Logger {
 
             // check if should print to terminal.
             // requirement: print out is enabled and the level is high enough
-            if self.setting.print_out && self.setting.terminal_print_level.get_level() <= i.get_level() { println!("{}", i.print()) };
+            if self.setting.print_out
+                && self.setting.terminal_print_level.get_level() <= i.get_level()
+            {
+                println!("{}", i.print())
+            };
 
             // check if should write to file.
             // requirement: the level is high enough
             if self.setting.file_record_level.get_level() <= i.get_level() {
-                self.file.as_mut().unwrap().write_all((i.print() + "\n").as_bytes()).await.expect("Cannot write into the log file.");
+                self.file
+                    .as_mut()
+                    .unwrap()
+                    .write_all((i.print() + "\n").as_bytes())
+                    .await
+                    .expect("Cannot write into the log file.");
                 self.used_length += 1;
             };
         }
@@ -161,12 +183,13 @@ impl Logger {
             self.used_length = 0;
             self.file = None;
         }
-
     }
 
     /// provide a method to log something by only a given string and [`LogLevel`].
     pub async fn record(&mut self, log_level: LogLevel, message: &str) {
-        if ! self.init { self.init = true }
+        if !self.init {
+            self.init = true
+        }
         let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone);
         msg.time.detailed_display = self.setting.time_detailed_display;
         self.write(&msg).await;
@@ -201,7 +224,13 @@ impl Logger {
     async fn get_file(&self) -> File {
         let path = self.get_path(&self.current_file_prefix, self.current_index);
         // enable read and write and create a new file if not exist
-        File::options().read(true).write(true).create_new(true).open(path).await.expect("Cannot create the log file.")
+        File::options()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open(path)
+            .await
+            .expect("Cannot create the log file.")
     }
 
     /// Get the index of the current log file.
@@ -211,10 +240,10 @@ impl Logger {
         loop {
             let path = self.get_path(time_prefix, count);
             // if the file exists, then the index is the next one
-            if let Ok(_) = File::open(path).await { 
+            if let Ok(_) = File::open(path).await {
                 count += 1
             } else {
-                return count
+                return count;
             }
         }
     }
@@ -222,7 +251,6 @@ impl Logger {
 
 #[cfg(not(feature = "async"))]
 impl Logger {
-
     /// Customize and initialize the log writer.
     pub(crate) fn init(&mut self, setting: Setting) {
         if self.init {
@@ -270,7 +298,12 @@ impl Logger {
         for i in msg.split_enter() {
             // check if the time prefix has changed
             // (when a new day begins)
-            let time_prefix = format!("{}", chrono::Utc::now().with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap()).format("%Y-%m-%d"));
+            let time_prefix = format!(
+                "{}",
+                chrono::Utc::now()
+                    .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                    .format("%Y-%m-%d")
+            );
             if self.current_file_prefix != time_prefix {
                 self.current_file_prefix = time_prefix;
                 self.current_index = 0;
@@ -280,12 +313,20 @@ impl Logger {
 
             // check if should print to terminal.
             // requirement: print out is enabled and the level is high enough
-            if self.setting.print_out && self.setting.terminal_print_level.get_level() <= i.get_level() { println!("{}", i.print()) };
+            if self.setting.print_out
+                && self.setting.terminal_print_level.get_level() <= i.get_level()
+            {
+                println!("{}", i.print())
+            };
 
             // check if should write to file.
             // requirement: the level is high enough
             if self.setting.file_record_level.get_level() <= i.get_level() {
-                self.file.as_mut().unwrap().write_all((i.print() + "\n").as_bytes()).expect("Cannot write into the log file.");
+                self.file
+                    .as_mut()
+                    .unwrap()
+                    .write_all((i.print() + "\n").as_bytes())
+                    .expect("Cannot write into the log file.");
                 self.used_length += 1;
             };
         }
@@ -299,7 +340,9 @@ impl Logger {
 
     /// provide a method to log something by only a given string and [`LogLevel`].
     pub fn record(&mut self, log_level: LogLevel, message: &str) {
-        if ! self.init { self.init = true }
+        if !self.init {
+            self.init = true
+        }
         let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone);
         msg.time.detailed_display = self.setting.time_detailed_display;
         self.write(&msg);
@@ -337,10 +380,10 @@ impl Logger {
         loop {
             let path = self.get_path(time_prefix, count);
             // if the file exists, then the index is the next one
-            if let Ok(_) = File::open(path) { 
+            if let Ok(_) = File::open(path) {
                 count += 1
             } else {
-                return count
+                return count;
             }
         }
     }
@@ -349,7 +392,12 @@ impl Logger {
     fn get_file(&self) -> File {
         let path = self.get_path(&self.current_file_prefix, self.current_index);
         // enable read and write and create a new file if not exist
-        File::options().read(true).write(true).create_new(true).open(path).expect("Cannot create the log file.")
+        File::options()
+            .read(true)
+            .write(true)
+            .create_new(true)
+            .open(path)
+            .expect("Cannot create the log file.")
     }
 }
 

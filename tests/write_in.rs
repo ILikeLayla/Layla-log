@@ -4,7 +4,7 @@ use layla_log::*;
 #[test]
 fn write_in() {
     clean_log();
-    
+
     error!("This is an error message");
     warn!("This is a warning message");
     debug!("This is a debug message");

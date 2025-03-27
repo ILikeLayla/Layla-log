@@ -3,9 +3,8 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn test_disable() {
-
     clean_log();
-    
+
     // Disable all logging
     disable_log();
 
@@ -25,7 +24,7 @@ fn test_disable() {
 #[tokio::test]
 async fn test_disable() {
     clean_log().await;
-    
+
     // Disable all logging
     disable_log().await;
 

@@ -14,7 +14,11 @@ pub(crate) struct Time {
 impl Time {
     /// Pass a time and a specified time zone
     pub fn new(utc: DateTime<Utc>, time_offset: FixedOffset) -> Self {
-        Self { utc, time_offset, detailed_display: false }
+        Self {
+            utc,
+            time_offset,
+            detailed_display: false,
+        }
     }
 
     /// Get the current time with specified time zone
@@ -28,7 +32,9 @@ impl Time {
         if self.detailed_display {
             format!("{} ({})", self.utc.format(&format), self.time_offset)
         } else {
-            (self.utc.with_timezone(&self.time_offset)).format(&format).to_string()
+            (self.utc.with_timezone(&self.time_offset))
+                .format(&format)
+                .to_string()
         }
     }
 }
