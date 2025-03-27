@@ -1,4 +1,4 @@
-use super::{msg::LogMessage, LogLevel, Setting, position};
+use super::{msg::LogMessage, position, LogLevel, Setting};
 use chrono::FixedOffset;
 #[cfg(not(feature = "async"))]
 use std::fs::{self, File};
@@ -95,7 +95,8 @@ impl Logger {
     pub(crate) async fn init(&mut self, setting: Setting) {
         if self.init {
             let position = position!().to_string();
-            self.warn("Log writer had been initialized!", position).await;
+            self.warn("Log writer had been initialized!", position)
+                .await;
             return;
         }
 
@@ -191,7 +192,12 @@ impl Logger {
         if !self.init {
             self.init = true
         }
-        let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone, position);
+        let mut msg = LogMessage::new(
+            log_level,
+            message.to_string(),
+            self.setting.time_zone,
+            position,
+        );
         msg.time.detailed_display = self.setting.time_detailed_display;
         self.write(&msg).await;
     }
@@ -345,7 +351,12 @@ impl Logger {
         if !self.init {
             self.init = true
         }
-        let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone, position);
+        let mut msg = LogMessage::new(
+            log_level,
+            message.to_string(),
+            self.setting.time_zone,
+            position,
+        );
         msg.time.detailed_display = self.setting.time_detailed_display;
         self.write(&msg);
     }

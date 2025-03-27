@@ -58,7 +58,9 @@ mod bench {
                 clean_log();
                 let mut handles = Vec::new();
                 for _ in 0..10_000 {
-                    handles.push(std::thread::spawn(|| { info!("Hello, world!"); }))
+                    handles.push(std::thread::spawn(|| {
+                        info!("Hello, world!");
+                    }))
                 }
                 for handle in handles {
                     handle.join().unwrap();

@@ -9,7 +9,7 @@ pub(crate) struct LogMessage {
     // time of the log
     pub(crate) time: Time,
     // position
-    position: String
+    position: String,
 }
 
 impl LogMessage {
@@ -25,7 +25,10 @@ impl LogMessage {
 
     /// Formatting the log message
     pub fn print(&self) -> String {
-        format!("{} {}\t[{}] {}", self.time, self.level, self.position, self.message)
+        format!(
+            "{} {}\t[{}] {}",
+            self.time, self.level, self.position, self.message
+        )
     }
 
     /// Get the level of the log
