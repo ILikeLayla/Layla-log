@@ -28,7 +28,7 @@ mod bench {
                     init(Setting::default()).await;
                     clean_log().await;
                     let mut handles = Vec::new();
-                    for _ in 0..1_000 {
+                    for _ in 0..10_000 {
                         handles.push(tokio::spawn(async { info().await }))
                     }
                     for handle in handles {
@@ -57,7 +57,7 @@ mod bench {
                 init(Setting::default());
                 clean_log();
                 let mut handles = Vec::new();
-                for _ in 0..1_000 {
+                for _ in 0..10_000 {
                     handles.push(std::thread::spawn(|| { info!("Hello, world!"); }))
                 }
                 for handle in handles {
