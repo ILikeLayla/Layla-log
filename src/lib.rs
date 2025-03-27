@@ -37,7 +37,9 @@ macro_rules! func {
             std::any::type_name::<T>()
         }
         let name = type_name_of(f);
-        name.strip_suffix("::{{closure}}::f").unwrap()
+        name.rsplit("::")
+            .find(|&part| part != "f" && part != "{{closure}}")
+            .expect("Short function name")
     }};
 }
 
@@ -47,8 +49,8 @@ macro_rules! position {
         let function = $crate::func!();
         let file = file!();
         let line = line!();
-        format!("{} {}:{}", function, file, line)
-    }}
+        format!("{}@{}:{}", function, file, line)
+    }};
 }
 
 #[cfg(feature = "async")]
@@ -173,7 +175,8 @@ mod log {
     #[macro_export]
     macro_rules! error {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().expect("Cannot lock the logger.").error(&format!($($arg)*));
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().expect("Cannot lock the logger.").error(&format!($($arg)*), position);
         };
     }
 
@@ -182,7 +185,8 @@ mod log {
     #[macro_export]
     macro_rules! warn {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().expect("Cannot lock the logger.").warn(&format!($($arg)*));
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().expect("Cannot lock the logger.").warn(&format!($($arg)*), position);
         };
     }
 
@@ -191,7 +195,8 @@ mod log {
     #[macro_export]
     macro_rules! info {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().expect("Cannot lock the logger.").info(&format!($($arg)*));
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().expect("Cannot lock the logger.").info(&format!($($arg)*), position);
         };
     }
 
@@ -200,7 +205,8 @@ mod log {
     #[macro_export]
     macro_rules! debug {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().expect("Cannot lock the logger.").debug(&format!($($arg)*));
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().expect("Cannot lock the logger.").debug(&format!($($arg)*), position);
         };
     }
 
@@ -209,13 +215,15 @@ mod log {
     #[macro_export]
     macro_rules! trace {
         ($($arg:tt)*) => {
-            $crate::LOGGER.lock().expect("Cannot lock the logger.").trace(&format!($($arg)*));
+            let position = $crate::position!().to_string();
+            $crate::LOGGER.lock().expect("Cannot lock the logger.").trace(&format!($($arg)*), position);
         };
     }
 
     #[macro_export]
     macro_rules! log {
         ($level:expr, $($arg:tt)*) => {
+            let position = $crate::position!().to_string();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").record($level, &format!($($arg)*));
         }
     }

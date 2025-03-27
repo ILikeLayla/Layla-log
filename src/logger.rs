@@ -1,6 +1,4 @@
-use crate::func;
-
-use super::{msg::LogMessage, LogLevel, Setting};
+use super::{msg::LogMessage, LogLevel, Setting, position};
 use chrono::FixedOffset;
 #[cfg(not(feature = "async"))]
 use std::fs::{self, File};
@@ -96,7 +94,7 @@ impl Logger {
     /// Customize and initialize the log writer.
     pub(crate) async fn init(&mut self, setting: Setting) {
         if self.init {
-            let position = func!().to_string();
+            let position = position!().to_string();
             self.warn("Log writer had been initialized!", position).await;
             return;
         }
@@ -257,7 +255,8 @@ impl Logger {
     /// Customize and initialize the log writer.
     pub(crate) fn init(&mut self, setting: Setting) {
         if self.init {
-            self.warn("Log writer had been initialized!");
+            let position = position!().to_string();
+            self.warn("Log writer had been initialized!", position);
             return;
         }
 
@@ -342,38 +341,38 @@ impl Logger {
     }
 
     /// provide a method to log something by only a given string and [`LogLevel`].
-    pub fn record(&mut self, log_level: LogLevel, message: &str) {
+    pub fn record(&mut self, log_level: LogLevel, message: &str, position: String) {
         if !self.init {
             self.init = true
         }
-        let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone);
+        let mut msg = LogMessage::new(log_level, message.to_string(), self.setting.time_zone, position);
         msg.time.detailed_display = self.setting.time_detailed_display;
         self.write(&msg);
     }
 
     /// Record an info log.
-    pub fn info(&mut self, message: &str) {
-        self.record(LogLevel::Info, message);
+    pub fn info(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Info, message, position);
     }
 
     /// Record a debug log.
-    pub fn debug(&mut self, message: &str) {
-        self.record(LogLevel::Debug, message);
+    pub fn debug(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Debug, message, position);
     }
 
     /// Record a warn log.
-    pub fn warn(&mut self, message: &str) {
-        self.record(LogLevel::Warn, message);
+    pub fn warn(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Warn, message, position);
     }
 
     /// Record an error log.
-    pub fn error(&mut self, message: &str) {
-        self.record(LogLevel::Error, message);
+    pub fn error(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Error, message, position);
     }
 
     /// Record a trace log.
-    pub fn trace(&mut self, message: &str) {
-        self.record(LogLevel::Trace, message);
+    pub fn trace(&mut self, message: &str, position: String) {
+        self.record(LogLevel::Trace, message, position);
     }
 
     /// Get the index of the current log file.
