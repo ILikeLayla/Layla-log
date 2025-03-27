@@ -55,20 +55,20 @@ fn main() {
 and these are the output in the log file:
 
 ```log
-{TIME} (+00:00) ERROR	This is an error message
-{TIME} (+00:00) WARN	This is a warning message
-{TIME} (+00:00) DEBUG	This is a debug message
-{TIME} (+00:00) INFO	This is an info message
-{TIME} (+00:00) TRACE	This is a trace message
+{TIME} (+00:00) ERROR	[main@src\main.rs:14] This is an error message
+{TIME} (+00:00) WARN	[main@src\main.rs:15] This is a warning message
+{TIME} (+00:00) DEBUG	[main@src\main.rs:16] This is a debug message
+{TIME} (+00:00) INFO	[main@src\main.rs:17] This is an info message
+{TIME} (+00:00) TRACE	[main@src\main.rs:18] This is a trace message
 ```
 
 and these are the output in the terminal:
 
 ```log
-{TIME} (+00:00) ERROR  This is an error message
-{TIME} (+00:00) WARN   This is a warning message
-{TIME} (+00:00) DEBUG  This is a debug message
-{TIME} (+00:00) INFO   This is an info message
+{TIME} (+00:00) ERROR	[main@src\main.rs:14] This is an error message
+{TIME} (+00:00) WARN	[main@src\main.rs:15] This is a warning message
+{TIME} (+00:00) DEBUG	[main@src\main.rs:16] This is a debug message
+{TIME} (+00:00) INFO	[main@src\main.rs:17] This is an info message
 ```
 
 Furthermore, all the settings have a default value:
@@ -103,19 +103,19 @@ fn main() {
 and these are the output in the log file:
 
 ```log
-{TIME} (+00:00) ERROR	This is an error message
-{TIME} (+00:00) WARN	This is a warning message
-{TIME} (+00:00) DEBUG	This is a debug message
-{TIME} (+00:00) INFO	This is an info message
-{TIME} (+00:00) TRACE	This is a trace message
+{TIME} ERROR	[main@src\main.rs:14] This is an error message
+{TIME} WARN   [main@src\main.rs:15] This is a warning message
+{TIME} DEBUG	[main@src\main.rs:16] This is a debug message
+{TIME} INFO   [main@src\main.rs:17] This is an info message
+{TIME} TRACE  [main@src\main.rs:18] This is a trace message
 ```
 
 and these are the output in the terminal:
 
 ```log
-{TIME} (+00:00) ERROR  This is an error message
-{TIME} (+00:00) WARN   This is a warning message
-{TIME} (+00:00) DEBUG  This is a debug message
+{TIME} ERROR	[main@src\main.rs:14] This is an error message
+{TIME} WARN   [main@src\main.rs:15] This is a warning message
+{TIME} DEBUG	[main@src\main.rs:16] This is a debug message
 ```
 
 Here is an example without any explicit initialization:
@@ -214,8 +214,3 @@ fn main() {
 - `warn!`
 - `error!`
 - `log!`
-
-## Cases
-
-### Double Initialization
-This happens when `init()` or `default_init()` is called more than once. In this case, the logger won't be initialized again, but a warning log will be recorded (printed) with the content `"Log writer has been initialized!"`.

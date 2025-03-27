@@ -29,6 +29,7 @@ lazy_static! {
     pub static ref LOGGER: Mutex<Logger> = Mutex::new(Logger::new());
 }
 
+/// A macro that returns the name of the function it is called in.
 #[macro_export]
 macro_rules! func {
     () => {{
@@ -43,6 +44,7 @@ macro_rules! func {
     }};
 }
 
+/// A macro that returns the current position in the code.
 #[macro_export]
 macro_rules! position {
     () => {{
