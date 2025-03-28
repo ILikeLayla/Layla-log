@@ -14,7 +14,7 @@ mod bench {
 
     fn rt() -> tokio::runtime::Runtime {
         tokio::runtime::Builder::new_multi_thread()
-            .worker_threads(2)
+            .worker_threads(1)
             .build()
             .unwrap()
     }
@@ -25,11 +25,14 @@ mod bench {
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
                 let task = || async {
-                    init(Setting::default()).await;
+                    init(Setting {
+                        single_length: 1219,
+                        ..Default::default()
+                    }).await;
                     clean_log().await;
                     let mut handles = Vec::new();
                     for _ in 0..10_000 {
-                        handles.push(tokio::spawn(async { info().await }))
+                        handles.push(tokio::spawn(async { info!("Hello world"); }))
                     }
                     for handle in handles {
                         handle.await.unwrap();
@@ -39,10 +42,6 @@ mod bench {
                 rt.block_on(task());
             })
         });
-    }
-
-    async fn info() {
-        info!("Hello, world!");
     }
 }
 
@@ -54,7 +53,10 @@ mod bench {
     pub fn write_a_lot(c: &mut Criterion) {
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
-                init(Setting::default());
+                init(Setting {
+                    single_length: 1219,
+                    ..Default::default()
+                });
                 clean_log();
                 let mut handles = Vec::new();
                 for _ in 0..10_000 {
@@ -72,7 +74,7 @@ mod bench {
 
 criterion_group!(
     name = benches;
-    config = Criterion::default().measurement_time(Duration::from_secs(40));
+    config = Criterion::default().measurement_time(Duration::from_secs(100));
     targets = bench::write_a_lot
 );
 criterion_main!(benches);
