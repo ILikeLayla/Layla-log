@@ -46,8 +46,8 @@ fn main() {
     });
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
 }
 ```
@@ -57,8 +57,8 @@ and these are the output in the log file:
 ```log
 {TIME} (+00:00) ERROR	[main@src\main.rs:14] This is an error message
 {TIME} (+00:00) WARN	[main@src\main.rs:15] This is a warning message
-{TIME} (+00:00) DEBUG	[main@src\main.rs:16] This is a debug message
 {TIME} (+00:00) INFO	[main@src\main.rs:17] This is an info message
+{TIME} (+00:00) DEBUG	[main@src\main.rs:16] This is a debug message
 {TIME} (+00:00) TRACE	[main@src\main.rs:18] This is a trace message
 ```
 
@@ -67,8 +67,8 @@ and these are the output in the terminal:
 ```log
 {TIME} (+00:00) ERROR	[main@src\main.rs:14] This is an error message
 {TIME} (+00:00) WARN	[main@src\main.rs:15] This is a warning message
-{TIME} (+00:00) DEBUG	[main@src\main.rs:16] This is a debug message
 {TIME} (+00:00) INFO	[main@src\main.rs:17] This is an info message
+{TIME} (+00:00) DEBUG	[main@src\main.rs:16] This is a debug message
 ```
 
 Furthermore, all the settings have a default value:
@@ -94,8 +94,8 @@ fn main() {
     init(Setting::default());
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
 }
 ```
@@ -105,17 +105,17 @@ and these are the output in the log file:
 ```log
 {TIME} ERROR	[main@src\main.rs:14] This is an error message
 {TIME} WARN   [main@src\main.rs:15] This is a warning message
-{TIME} DEBUG	[main@src\main.rs:16] This is a debug message
 {TIME} INFO   [main@src\main.rs:17] This is an info message
+{TIME} DEBUG	[main@src\main.rs:16] This is a debug message
 {TIME} TRACE  [main@src\main.rs:18] This is a trace message
 ```
 
-and these are the output in the terminal:
+and these are the output in the terminal when release assertions:
 
 ```log
 {TIME} ERROR	[main@src\main.rs:14] This is an error message
 {TIME} WARN   [main@src\main.rs:15] This is a warning message
-{TIME} DEBUG	[main@src\main.rs:16] This is a debug message
+{TIME} INFO   [main@src\main.rs:17] This is an info message
 ```
 
 Here is an example without any explicit initialization:
@@ -126,8 +126,8 @@ use layla_log::*;
 fn main() {
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
 }
 ```
@@ -173,8 +173,8 @@ fn main() {
     // logs will not be recorded or printed
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
     
     enable_log();
@@ -182,8 +182,8 @@ fn main() {
     // logs can be recorded or printed (with significant level)
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
 }
 ```

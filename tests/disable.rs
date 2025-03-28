@@ -29,9 +29,9 @@ async fn test_disable() {
     disable_log().await;
 
     // Test that logging is disabled
-    info!("This should not be logged");
-    warn!("This should not be logged");
     error!("This should not be logged");
+    warn!("This should not be logged");
+    info!("This should not be logged");
     debug!("This should not be logged");
     trace!("This should not be logged");
 

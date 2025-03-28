@@ -7,8 +7,8 @@ fn write_in() {
 
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
 }
 
@@ -19,7 +19,7 @@ async fn write_in() {
 
     error!("This is an error message");
     warn!("This is a warning message");
-    debug!("This is a debug message");
     info!("This is an info message");
+    debug!("This is a debug message");
     trace!("This is a trace message");
 }
