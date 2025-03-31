@@ -7,5 +7,5 @@ However, `init()` should **ONLY** be called at most once in a single time and be
 Actually, calling `init()` for multiple times won't lead to a panic, instead, it will record a warn log: 
 
 ```log
-{TIE} WARN	[init@src\logger.rs:97] Log writer had been initialized!
+{TIME} WARN	[init @ src\logger.rs:97] Log writer had been initialized!
 ```

@@ -287,9 +287,9 @@ pub enum LogLevel {
 impl std::fmt::Display for LogLevel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LogLevel::Info => write!(f, "INFO"),
+            LogLevel::Info => write!(f, "INFO "),
             LogLevel::Debug => write!(f, "DEBUG"),
-            LogLevel::Warn => write!(f, "WARN"),
+            LogLevel::Warn => write!(f, "WARN "),
             LogLevel::Error => write!(f, "ERROR"),
             LogLevel::Trace => write!(f, "TRACE"),
         }
