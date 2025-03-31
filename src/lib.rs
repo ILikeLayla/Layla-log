@@ -231,7 +231,7 @@ mod log {
     macro_rules! log {
         ($level:expr, $($arg:tt)*) => {
             let position = $crate::position!().to_string();
-            $crate::LOGGER.lock().expect("Cannot lock the logger.").record($level, &format!($($arg)*));
+            $crate::LOGGER.lock().expect("Cannot lock the logger.").record($level, &format!($($arg)*), position);
         }
     }
 

@@ -69,7 +69,7 @@ impl Logger {
     /// Get the index of the current log file.
     /// This is used when resume the logging, since have to keep a continuos order of the log files.
     fn get_index_not_async(&self, time_prefix: &str) -> usize {
-        let mut count = 1;
+        let mut count = 0;
         loop {
             let path = self.get_path(time_prefix, count);
             // if the file exists, then the index is the next one
@@ -243,7 +243,7 @@ impl Logger {
     /// Get the index of the current log file.
     /// This is used when resume the logging, since have to keep a continuos order of the log files.
     async fn get_index(&self, time_prefix: &str) -> usize {
-        let mut count = 1;
+        let mut count = 0;
         loop {
             let path = self.get_path(time_prefix, count);
             // if the file exists, then the index is the next one
@@ -291,6 +291,12 @@ impl Logger {
         self.current_index = 0;
         self.used_length = 0;
         self.file = None;
+        self.current_file_prefix = format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format(&self.setting.file_time_format)
+        );
     }
 
     /// Write a single log message to the file.
@@ -389,7 +395,7 @@ impl Logger {
     /// Get the index of the current log file.
     /// This is used when resume the logging, since have to keep a continuos order of the log files.
     fn get_index(&self, time_prefix: &str) -> usize {
-        let mut count = 1;
+        let mut count = 0;
         loop {
             let path = self.get_path(time_prefix, count);
             // if the file exists, then the index is the next one
