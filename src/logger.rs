@@ -101,12 +101,18 @@ impl Logger {
         }
 
         self.file = None;
-        self.current_index = 0;
         self.used_length = 0;
 
         self.setting = setting;
 
         self.init = true;
+
+        self.current_file_prefix =  format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format("%Y-%m-%d")
+        );
         self.current_index = self.get_index(&self.current_file_prefix).await;
     }
 
@@ -114,6 +120,12 @@ impl Logger {
     pub(crate) async fn set(&mut self, setting: Setting) {
         self.init = true;
         self.setting = setting;
+        self.current_file_prefix = format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format("%Y-%m-%d")
+        );
         self.current_index = self.get_index(&self.current_file_prefix).await;
         self.file = Some(self.get_file().await);
     }
@@ -267,12 +279,18 @@ impl Logger {
         }
 
         self.file = None;
-        self.current_index = 0;
         self.used_length = 0;
 
         self.setting = setting;
 
         self.init = true;
+
+        self.current_file_prefix = format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format("%Y-%m-%d")
+        );
         self.current_index = self.get_index(&self.current_file_prefix);
     }
 
@@ -280,6 +298,12 @@ impl Logger {
     pub(crate) fn set(&mut self, setting: Setting) {
         self.init = true;
         self.setting = setting;
+        self.current_file_prefix = format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format("%Y-%m-%d")
+        );
         self.current_index = self.get_index(&self.current_file_prefix);
         self.file = Some(self.get_file());
     }
