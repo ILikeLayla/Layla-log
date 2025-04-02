@@ -84,16 +84,6 @@ mod async_log {
         writer.clear_dir().await;
     }
 
-    /// Define a public asynchronous function named `set` that takes a `Setting` as a parameter.
-    pub async fn set(setting: Setting) {
-        // Acquire a mutable lock on the `LOGGER` using the `await` keyword to handle the asynchronous lock acquisition.
-        // This ensures that only one writer can access the LOGGER at a time.
-        let mut writer = LOGGER.lock().await;
-        // Call the `set` method on the locked writer, passing the `setting` parameter to it.
-        // This method call is also asynchronous and will await its completion.
-        writer.set(setting).await;
-    }
-
     /// Macro to log error message.
     /// First lock the logger in static, then log the message.
     #[macro_export]
@@ -245,14 +235,6 @@ mod log {
     pub fn clean_log() {
         let mut writer = LOGGER.lock().expect("Cannot lock the logger.");
         writer.clear_dir();
-    }
-
-    /// Public function to set a specific logging setting
-    pub fn set(setting: Setting) {
-        // Lock the LOGGER to ensure thread-safe access
-        let mut writer = LOGGER.lock().expect("Cannot lock the logger.");
-        // Set the provided logging setting using the writer
-        writer.set(setting);
     }
 
     /// Public function to enable logging

@@ -101,21 +101,18 @@ impl Logger {
         }
 
         self.file = None;
-        self.current_index = 0;
         self.used_length = 0;
 
         self.setting = setting;
 
         self.init = true;
+        self.current_file_prefix =  format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format("%Y-%m-%d")
+        );
         self.current_index = self.get_index(&self.current_file_prefix).await;
-    }
-
-    /// Change some setting after initialization.
-    pub(crate) async fn set(&mut self, setting: Setting) {
-        self.init = true;
-        self.setting = setting;
-        self.current_index = self.get_index(&self.current_file_prefix).await;
-        self.file = Some(self.get_file().await);
     }
 
     /// clear the log directory. (remove all the log files in the directory)
@@ -153,7 +150,7 @@ impl Logger {
             );
             if self.current_file_prefix != time_prefix {
                 self.current_file_prefix = time_prefix;
-                self.current_index = 0;
+                self.current_index = self.current_index = self.get_index(&self.current_file_prefix).await;;
                 self.used_length = 0;
                 self.file = Some(self.get_file().await);
             };
@@ -267,21 +264,18 @@ impl Logger {
         }
 
         self.file = None;
-        self.current_index = 0;
         self.used_length = 0;
 
         self.setting = setting;
 
         self.init = true;
+        self.current_file_prefix = format!(
+            "{}",
+            chrono::Utc::now()
+                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                .format("%Y-%m-%d")
+        );
         self.current_index = self.get_index(&self.current_file_prefix);
-    }
-
-    /// Change some setting after initialization.
-    pub(crate) fn set(&mut self, setting: Setting) {
-        self.init = true;
-        self.setting = setting;
-        self.current_index = self.get_index(&self.current_file_prefix);
-        self.file = Some(self.get_file());
     }
 
     /// clear the log directory.
@@ -320,7 +314,7 @@ impl Logger {
             );
             if self.current_file_prefix != time_prefix {
                 self.current_file_prefix = time_prefix;
-                self.current_index = 0;
+                self.current_index = self.get_index(&self.current_file_prefix);
                 self.used_length = 0;
                 self.file = Some(self.get_file());
             };

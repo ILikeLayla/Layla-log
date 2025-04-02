@@ -5,7 +5,6 @@ Some async functions are announced to deal with the File IO, and they are the im
 Here is the list:
 
 - `init()`
-- `set()`
 - `clear_dir()`
 - `write()`
 - `record()`
@@ -21,7 +20,6 @@ And those which call the function above also have an async attribute, here is th
 
 - `init()` in [lib.rs](../src/lib.rs)
 - `clean_log()`
-- `set()` in [lib.rs](../src/lib.rs)
 - `error!`
 - `warn!`
 - `info!`

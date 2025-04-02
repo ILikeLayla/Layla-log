@@ -3,6 +3,7 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn double_init() {
+    clean_log();
     init(Setting {
         dir_path: "./logs".to_string(),
         ..Default::default()
@@ -23,6 +24,7 @@ fn double_init() {
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn double_init() {
+    clean_log().await;
     init(Setting {
         dir_path: "./logs".to_string(),
         ..Default::default()

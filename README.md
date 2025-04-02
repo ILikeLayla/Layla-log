@@ -85,7 +85,7 @@ These default settings can be used by:
 - Using the default setting to initialize the logger
 - No explicit initialization.
 
-Here is an example using `default_init()`:
+Here is an example using the default setting:
 
 ```rust
 use layla_log::*;
@@ -144,24 +144,6 @@ fn main() {
 }
 ```
 
-And also, if some setting changes after a while, then a `set` method can be used. (details see [init and set](./doc/init_and_set.md))
-
-```rust
-use layla_log::{init, set, Setting};
-
-fn main() {
-    init(Setting {
-        // something
-    });
-    
-    // something
-    
-    set(Setting {
-        // something
-    })
-}
-```
-
 If the logger is disabled and then enabled after some codes, then the `disable_log` and `enable_log` methods can be used.
 
 ```rust
@@ -197,6 +179,15 @@ fn main() {
     log!(LogLevel::Trace, "Hello, {}!", "world");
 }
 
+```
+
+## Cases
+
+### Double initialization
+calling `init()` for multiple times won't lead to a panic, instead, it will record a warn log: 
+
+```log
+{TIME} WARN	[init @ src\logger.rs:97] Log writer had been initialized!
 ```
 
 ## Method list
