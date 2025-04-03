@@ -193,7 +193,6 @@ calling `init()` for multiple times won't lead to a panic, instead, it will reco
 ## Method list
 
 - `init(setting: Setting)`
-- `set(setting: Setting)`
 - `disable_log()`
 - `enable_log()`
 
