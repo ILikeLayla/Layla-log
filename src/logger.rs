@@ -106,7 +106,7 @@ impl Logger {
         self.setting = setting;
 
         self.init = true;
-        self.current_file_prefix =  format!(
+        self.current_file_prefix = format!(
             "{}",
             chrono::Utc::now()
                 .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
@@ -150,7 +150,7 @@ impl Logger {
             );
             if self.current_file_prefix != time_prefix {
                 self.current_file_prefix = time_prefix;
-                self.current_index = self.current_index = self.get_index(&self.current_file_prefix).await;;
+                self.current_index = self.get_index(&self.current_file_prefix).await;
                 self.used_length = 0;
                 self.file = Some(self.get_file().await);
             };
