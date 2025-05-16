@@ -38,9 +38,6 @@ macro_rules! func {
             std::any::type_name::<T>()
         }
         let name = type_name_of(f);
-        // name.rsplit("::")
-        //     .find(|&part| part != "f" && part != "{{closure}}")
-        //     .expect("Short function name")
         name.strip_suffix("::f")
             .unwrap()
             .rsplit("::")
