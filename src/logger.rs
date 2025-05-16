@@ -18,7 +18,7 @@ pub struct Logger {
     current_index: usize,
     /// the length of the log that have been written.
     used_length: usize,
-    /// a buffer to store the prefex of log files' name.
+    /// a buffer to store the prefix of log files' name.
     current_file_prefix: String,
     /// check if the writer is initialized.
     init: bool,
@@ -46,7 +46,6 @@ impl Logger {
             ),
             setting,
         };
-        buffer.check_dir();
         buffer.current_index = buffer.get_index_not_async(&buffer.current_file_prefix);
         buffer
     }
@@ -67,7 +66,7 @@ impl Logger {
     }
 
     /// Get the index of the current log file.
-    /// This is used when resume the logging, since have to keep a continuos order of the log files.
+    /// This is used when resume the logging, since have to keep a continous order of the log files.
     fn get_index_not_async(&self, time_prefix: &str) -> usize {
         let mut count = 0;
         loop {
@@ -112,6 +111,7 @@ impl Logger {
                 .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
                 .format("%Y-%m-%d")
         );
+        self.check_dir();
         self.current_index = self.get_index(&self.current_file_prefix).await;
     }
 
@@ -275,6 +275,7 @@ impl Logger {
                 .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
                 .format("%Y-%m-%d")
         );
+        self.check_dir();
         self.current_index = self.get_index(&self.current_file_prefix);
     }
 
