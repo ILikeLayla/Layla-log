@@ -53,7 +53,8 @@ macro_rules! position {
         let function = $crate::func!();
         let file = file!();
         let line = line!();
-        format!("{} @ {}:{}", function, file, line)
+        let column = column!();
+        format!("{} @ {}:{}:{}", function, file, line, column)
     }};
 }
 
