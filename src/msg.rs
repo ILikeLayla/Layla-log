@@ -1,7 +1,7 @@
 use super::{time::Time, LogLevel};
 
 #[derive(Clone, Debug)]
-pub(crate) struct LogMessage {
+pub struct LogMessage {
     // level of the log
     level: LogLevel,
     // message of the log
@@ -53,3 +53,25 @@ impl LogMessage {
 }
 
 unsafe impl Send for LogMessage {}
+
+impl std::fmt::Display for LogMessage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.print())
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+
+    #[test]
+    fn print_message() {
+        let log = LogMessage {
+            position: "test".to_string(),
+            level: LogLevel::Info,
+            message: "test message".to_string(),
+            time: Time::now(0),
+        };
+        println!("{}", log)
+    }
+}
