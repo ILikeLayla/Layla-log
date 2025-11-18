@@ -4,7 +4,7 @@ use layla_log::*;
 #[test]
 fn write_in() {
     clean_log();
-    init(LogSetting {
+    log_init(LogSetting {
         time_zone: 1,
         time_detailed_display: true,
         ..Default::default()

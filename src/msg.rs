@@ -1,4 +1,4 @@
-use super::{time::Time, LogLevel, LOGSETTING};
+use super::{time::Time, LogLevel, LOGSETTING, PositionTag};
 
 #[derive(Clone, Debug)]
 pub struct LogMessage {
@@ -9,13 +9,13 @@ pub struct LogMessage {
     // time of the log
     time: Time,
     // position
-    position: String,
+    position: PositionTag,
 }
 
 impl LogMessage {
     /// Creates a new log message
     #[cfg(not(feature = "async"))]
-    pub fn new(level: LogLevel, message: String, position: String) -> Self {
+    pub fn new(level: LogLevel, message: String, position: PositionTag) -> Self {
         let time_zone = LOGSETTING.lock().unwrap().time_zone;
         Self {
             level,
@@ -50,10 +50,18 @@ unsafe impl Send for LogMessage {}
 
 impl std::fmt::Display for LogMessage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let setting = LOGSETTING.lock().unwrap();
+        let position_tag = match (setting.display_scoop, setting.display_path) {
+            (true, true) => format!(" [{} @ {}]", self.position.scoop, self.position.path),
+            (true, false) => format!(" [{}]", self.position.scoop),
+            (false, true) => format!(" [{}]", self.position.path),
+            (false, false) => String::new(),
+        };
+        drop(setting);
         write!(
             f,
-            "{} {} [{}] {}",
-            self.time, self.level, self.position, self.message
+            "{} {}{} {}",
+            self.time, self.level, position_tag, self.message
         )
     }
 }
@@ -61,11 +69,11 @@ impl std::fmt::Display for LogMessage {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::{init, position, LogSetting};
+    use crate::{log_init, position, LogSetting};
 
     #[test]
     pub fn create_a_message() {
-        init(LogSetting {
+        log_init(LogSetting {
             time_zone: 1,
             time_detailed_display: true,
             ..Default::default()
@@ -77,7 +85,7 @@ pub mod tests {
     #[test]
     fn print_message() {
         let log = LogMessage {
-            position: "test".to_string(),
+            position: PositionTag { scoop: "test_scoop".to_string(), path: "test_path".to_string() },
             level: LogLevel::Info,
             message: "test message".to_string(),
             time: Time::now(0),

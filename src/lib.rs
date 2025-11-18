@@ -59,9 +59,21 @@ macro_rules! position {
         let file = file!();
         let line = line!();
         let column = column!();
-        format!("{} @ {}:{}:{}", function, file, line, column)
+        // format!("{} @ {}:{}:{}", function, file, line, column)
+        $crate::PositionTag {
+            scoop: function.to_string(),
+            path: format!("{}:{}:{}", file, line, column),
+        }
     }};
 }
+
+#[derive(Clone, Debug)]
+pub struct PositionTag {
+    pub scoop: String,
+    pub path: String,
+}
+
+
 
 #[cfg(feature = "async")]
 mod async_log {
@@ -175,7 +187,7 @@ mod sync_log {
     #[macro_export]
     macro_rules! error {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").error(&format!($($arg)*), position);
         };
     }
@@ -185,7 +197,7 @@ mod sync_log {
     #[macro_export]
     macro_rules! warn {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").warn(&format!($($arg)*), position);
         };
     }
@@ -195,7 +207,7 @@ mod sync_log {
     #[macro_export]
     macro_rules! info {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").info(&format!($($arg)*), position);
         };
     }
@@ -205,7 +217,7 @@ mod sync_log {
     #[macro_export]
     macro_rules! debug {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").debug(&format!($($arg)*), position);
         };
     }
@@ -215,7 +227,7 @@ mod sync_log {
     #[macro_export]
     macro_rules! trace {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").trace(&format!($($arg)*), position);
         };
     }
@@ -223,15 +235,19 @@ mod sync_log {
     #[macro_export]
     macro_rules! log {
         ($level:expr, $($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().expect("Cannot lock the logger.").record($level, &format!($($arg)*), position);
         }
     }
 
     /// Initialize the static logger with customized setting.
-    pub fn init(setting: LogSetting) {
+    pub fn log_init(setting: LogSetting) {
         let mut logger = LOGGER.lock().unwrap();
         logger.init(setting);
+    }
+
+    pub fn log_set(setting: LogSetting) {
+        *LOGSETTING.lock().unwrap() = setting;
     }
 
     /// Provide a easier way to clean all the existed logs.

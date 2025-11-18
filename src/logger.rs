@@ -1,4 +1,4 @@
-use super::{msg::LogMessage, position, LogLevel, LogSetting, LOGSETTING};
+use super::{msg::LogMessage, position, LogLevel, LogSetting, LOGSETTING, PositionTag};
 use chrono::FixedOffset;
 #[cfg(not(feature = "async"))]
 use std::fs::{self, File};
@@ -257,8 +257,7 @@ impl Logger {
     /// Customize and initialize the log writer.
     pub(crate) fn init(&mut self, setting: LogSetting) {
         if self.init {
-            let position = position!().to_string();
-            self.warn("Log writer had been initialized!", position);
+            self.warn("Log writer had been initialized!", position!());
             return;
         }
 
@@ -355,7 +354,7 @@ impl Logger {
     }
 
     /// provide a method to log something by only a given string and [`LogLevel`].
-    pub fn record(&mut self, log_level: LogLevel, message: &str, position: String) {
+    pub fn record(&mut self, log_level: LogLevel, message: &str, position: PositionTag) {
         if !self.init {
             self.init = true
         }
@@ -364,27 +363,27 @@ impl Logger {
     }
 
     /// Record an info log.
-    pub fn info(&mut self, message: &str, position: String) {
+    pub fn info(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Info, message, position);
     }
 
     /// Record a debug log.
-    pub fn debug(&mut self, message: &str, position: String) {
+    pub fn debug(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Debug, message, position);
     }
 
     /// Record a warn log.
-    pub fn warn(&mut self, message: &str, position: String) {
+    pub fn warn(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Warn, message, position);
     }
 
     /// Record an error log.
-    pub fn error(&mut self, message: &str, position: String) {
+    pub fn error(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Error, message, position);
     }
 
     /// Record a trace log.
-    pub fn trace(&mut self, message: &str, position: String) {
+    pub fn trace(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Trace, message, position);
     }
 

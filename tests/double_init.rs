@@ -4,12 +4,12 @@ use layla_log::*;
 #[test]
 fn double_init() {
     clean_log();
-    init(LogSetting {
+    log_init(LogSetting {
         dir_path: "./logs".to_string(),
         ..Default::default()
     });
 
-    init(LogSetting {
+    log_init(LogSetting {
         dir_path: "./logs".to_string(),
         ..Default::default()
     });
