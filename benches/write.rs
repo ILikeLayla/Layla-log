@@ -48,12 +48,12 @@ mod bench {
 #[cfg(not(feature = "async"))]
 mod bench {
     use criterion::Criterion;
-    use layla_log::{clean_log, info, init, Setting};
+    use layla_log::{clean_log, info, init, LogSetting};
 
     pub fn write_a_lot(c: &mut Criterion) {
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
-                init(Setting {
+                init(LogSetting {
                     single_length: 1219,
                     ..Default::default()
                 });

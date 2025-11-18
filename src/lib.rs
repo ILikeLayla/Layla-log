@@ -2,20 +2,24 @@
 //! It can be used to write logs in a program. The logs can be written to a dictionary.
 //! The log level can be set to different levels (Error, Warn, Debug, Info and Trace).
 
+// TODO: Seperate the LogSetting from the Logger
+// TODO: do the same update to the async part
+
 mod logger;
 mod msg;
 mod setting;
 mod time;
 
 pub use logger::*;
-pub use setting::Setting;
+pub use setting::LogSetting;
 
 #[cfg(feature = "async")]
 pub use async_log::*;
 #[cfg(not(feature = "async"))]
-pub use log::*;
+pub use sync_log::*;
 
 use lazy_static::lazy_static;
+use std::sync::Arc;
 #[cfg(not(feature = "async"))]
 use std::sync::Mutex;
 #[cfg(feature = "async")]
@@ -26,7 +30,8 @@ use tokio::sync::Mutex;
 lazy_static! {
     /// The static logger.
     /// If async feature is enabled, the mutex used is [``tokio::sync::mutex``], otherwise it is [`std::sync::Mutex`].
-    pub static ref LOGGER: Mutex<Logger> = Mutex::new(Logger::new());
+    pub static ref LOGGER: Arc<Mutex<Logger>> = Arc::new(Mutex::new(Logger::new()));
+    pub static ref LOGSETTING: Arc<Mutex<LogSetting>> = Arc::new(Mutex::new(LogSetting::default()));
 }
 
 /// A macro that returns the name of the function it is called in.
@@ -162,7 +167,7 @@ mod async_log {
 }
 
 #[cfg(not(feature = "async"))]
-mod log {
+mod sync_log {
     use super::*;
 
     /// Macro to log error message.
@@ -224,7 +229,7 @@ mod log {
     }
 
     /// Initialize the static logger with customized setting.
-    pub fn init(setting: Setting) {
+    pub fn init(setting: LogSetting) {
         let mut logger = LOGGER.lock().unwrap();
         logger.init(setting);
     }

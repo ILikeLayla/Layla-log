@@ -1,4 +1,4 @@
-use super::{time::Time, LogLevel};
+use super::{time::Time, LogLevel, LOGSETTING};
 
 #[derive(Clone, Debug)]
 pub struct LogMessage {
@@ -7,28 +7,22 @@ pub struct LogMessage {
     // message of the log
     message: String,
     // time of the log
-    pub(crate) time: Time,
+    time: Time,
     // position
     position: String,
 }
 
 impl LogMessage {
     /// Creates a new log message
-    pub fn new(level: LogLevel, message: String, time_zone: i32, position: String) -> Self {
+    #[cfg(not(feature = "async"))]
+    pub fn new(level: LogLevel, message: String, position: String) -> Self {
+        let time_zone = LOGSETTING.lock().unwrap().time_zone;
         Self {
             level,
             message,
             position,
             time: Time::now(time_zone),
         }
-    }
-
-    /// Formatting the log message
-    pub fn print(&self) -> String {
-        format!(
-            "{} {} [{}] {}",
-            self.time, self.level, self.position, self.message
-        )
     }
 
     /// Get the level of the log
@@ -56,13 +50,29 @@ unsafe impl Send for LogMessage {}
 
 impl std::fmt::Display for LogMessage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.print())
+        write!(
+            f,
+            "{} {} [{}] {}",
+            self.time, self.level, self.position, self.message
+        )
     }
 }
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    use crate::{init, position, LogSetting};
+
+    #[test]
+    pub fn create_a_message() {
+        init(LogSetting {
+            time_zone: 1,
+            time_detailed_display: true,
+            ..Default::default()
+        });
+        let log = LogMessage::new(LogLevel::Info, "test".to_string(), position!());
+        println!("{}", log);
+    }
 
     #[test]
     fn print_message() {

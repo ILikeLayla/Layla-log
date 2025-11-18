@@ -2,7 +2,7 @@ use super::LogLevel;
 
 /// the configuration of the logger.
 #[derive(Debug)]
-pub struct Setting {
+pub struct LogSetting {
     /// where stores the log files.
     pub dir_path: String,
     /// the maximum number of logs in a single file.
@@ -19,11 +19,9 @@ pub struct Setting {
     pub time_zone: i32,
     /// setting whether to print the log to the terminal.
     pub print_out: bool,
-    /// setting whether to log or not
-    pub disabled: bool,
 }
 
-impl std::default::Default for Setting {
+impl std::default::Default for LogSetting {
     /// Provide default settings, and the logger can use the default setting to initialize itself.
     fn default() -> Self {
         let terminal_print_level = if cfg!(debug_assertions) {
@@ -32,7 +30,7 @@ impl std::default::Default for Setting {
             LogLevel::Info
         };
 
-        Setting {
+        LogSetting {
             dir_path: "./logs".to_string(),
             single_length: 0,
             file_record_level: LogLevel::Trace,
@@ -40,10 +38,9 @@ impl std::default::Default for Setting {
             time_detailed_display: false,
             file_time_format: "%Y-%m-%d".to_string(),
             time_zone: 0,
-            print_out: false,
-            disabled: false,
+            print_out: true,
         }
     }
 }
 
-unsafe impl Send for Setting {}
+unsafe impl Send for LogSetting {}
