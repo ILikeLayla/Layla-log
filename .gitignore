@@ -19,3 +19,7 @@ Cargo.lock
 # logs
 *.log
 /logs
+
+# Editor
+.vscode/
+.idea/
