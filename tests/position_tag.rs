@@ -4,11 +4,10 @@ use layla_log::*;
 #[test]
 fn write_in() {
     clean_log();
-    log_init(LogSetting {
+    log_set! {
         display_path: true,
-        display_scoop: true,
-        ..Default::default()
-    });
+        display_scoop: true
+    };
     
     error!("This is an error message");
     warn!("This is a warning message");
@@ -16,11 +15,10 @@ fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set(LogSetting {
+    log_set!{
         display_path: false,
-        display_scoop: true,
-        ..Default::default()
-    });
+        display_scoop: true
+    };
 
     error!("This is an error message");
     warn!("This is a warning message");
@@ -28,11 +26,10 @@ fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set(LogSetting {
+    log_set!{
         display_path: true,
-        display_scoop: false,
-        ..Default::default()
-    });
+        display_scoop: false
+    };
 
     error!("This is an error message");
     warn!("This is a warning message");
@@ -40,11 +37,10 @@ fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set(LogSetting {
+    log_set!{
         display_path: false,
-        display_scoop: false,
-        ..Default::default()
-    });
+        display_scoop: false
+    };
 
     error!("This is an error message");
     warn!("This is a warning message");

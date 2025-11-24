@@ -1,4 +1,4 @@
-use super::{msg::LogMessage, position, LogLevel, LogSetting, LOGSETTING, PositionTag};
+use super::{msg::LogMessage, LogLevel, LogSetting, LOGSETTING, PositionTag};
 use chrono::FixedOffset;
 #[cfg(not(feature = "async"))]
 use std::fs::{self, File};
@@ -13,6 +13,12 @@ fn get_path(dir_path: &str, time_prefix: &str, index: usize) -> String {
     format!("{}/{}_{}.log", dir_path, time_prefix, index)
 }
 
+fn check_dir(dir_path: &str) {
+    if !std::path::Path::new(dir_path).exists() {
+        std::fs::create_dir(dir_path).expect("Failed to create directory");
+    }
+}
+
 /// A writer for buffering the log and writing them into the suitable files.
 #[derive(Debug)]
 pub struct Logger {
@@ -24,8 +30,6 @@ pub struct Logger {
     used_length: usize,
     /// a buffer to store the prefix of log files' name.
     current_file_prefix: String,
-    /// check if the writer is initialized.
-    init: bool,
     enable: bool,
 }
 
@@ -34,11 +38,10 @@ impl Logger {
     pub(crate) fn new() -> Self {
         let default_setting = LogSetting::default();
 
-        let mut buffer = Self {
+        let buffer = Self {
             file: None,
             current_index: 0,
             used_length: 0,
-            init: false,
             current_file_prefix: format!(
                 "{}",
                 chrono::Utc::now()
@@ -49,33 +52,7 @@ impl Logger {
             ),
             enable: true,
         };
-        buffer.current_index =
-            buffer.get_index_not_async(&default_setting.dir_path, &buffer.current_file_prefix);
         buffer
-    }
-
-
-    /// Get the index of the current log file.
-    /// This is used when resume the logging, since have to keep a continous order of the log files.
-    fn get_index_not_async(&self, dir_path: &str, time_prefix: &str) -> usize {
-        let mut count = 0;
-        loop {
-            let path = get_path(dir_path, time_prefix, count);
-            // if the file exists, then the index is the next one
-            if let Ok(_) = std::fs::File::open(path) {
-                count += 1
-            } else {
-                return count;
-            }
-        }
-    }
-
-    /// check the dir if it exists. if not, create it
-    fn check_dir(&self) {
-        let setting = LOGSETTING.lock().unwrap();
-        if !std::path::Path::new(&setting.dir_path).exists() {
-            std::fs::create_dir(&setting.dir_path).expect("Failed to create directory");
-        }
     }
 
     pub fn enable(&mut self) {
@@ -254,28 +231,6 @@ impl Logger {
 
 #[cfg(not(feature = "async"))]
 impl Logger {
-    /// Customize and initialize the log writer.
-    pub(crate) fn init(&mut self, setting: LogSetting) {
-        if self.init {
-            self.warn("Log writer had been initialized!", position!());
-            return;
-        }
-
-        self.file = None;
-        self.used_length = 0;
-
-        self.init = true;
-        self.current_file_prefix = format!(
-            "{}",
-            chrono::Utc::now()
-                .with_timezone(&FixedOffset::east_opt(setting.time_zone * 3600).unwrap())
-                .format("%Y-%m-%d")
-        );
-        self.check_dir();
-        self.current_index = self.get_index(&setting.dir_path, &self.current_file_prefix);
-
-        *LOGSETTING.lock().unwrap() = setting;
-    }
 
     /// clear the log directory.
     pub(crate) fn clear_dir(&mut self) {
@@ -301,6 +256,7 @@ impl Logger {
         }
 
         if self.file.is_none() {
+            self.current_index = self.get_index(&setting.dir_path, &self.current_file_prefix);
             self.file = Some(self.get_file(&setting.dir_path));
         }
 
@@ -355,9 +311,6 @@ impl Logger {
 
     /// provide a method to log something by only a given string and [`LogLevel`].
     pub fn record(&mut self, log_level: LogLevel, message: &str, position: PositionTag) {
-        if !self.init {
-            self.init = true
-        }
         let msg = LogMessage::new(log_level, message.to_string(), position);
         self.write(&msg);
     }
@@ -390,6 +343,7 @@ impl Logger {
     /// Get the index of the current log file.
     /// This is used when resume the logging, since have to keep a continuos order of the log files.
     fn get_index(&self, dir_path: &str, time_prefix: &str) -> usize {
+        check_dir(dir_path);
         let mut count = 0;
         loop {
             let path = get_path(dir_path, time_prefix, count);

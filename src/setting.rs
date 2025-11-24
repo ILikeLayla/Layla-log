@@ -1,7 +1,7 @@
 use super::LogLevel;
 
 /// the configuration of the logger.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LogSetting {
     /// where stores the log files.
     pub dir_path: String,

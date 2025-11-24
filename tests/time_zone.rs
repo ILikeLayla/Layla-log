@@ -4,11 +4,10 @@ use layla_log::*;
 #[test]
 fn write_in() {
     clean_log();
-    log_init(LogSetting {
+    log_set! {
         time_zone: 1,
-        time_detailed_display: true,
-        ..Default::default()
-    });
+        time_detailed_display: true
+    };
     
     error!("This is an error message");
     warn!("This is a warning message");

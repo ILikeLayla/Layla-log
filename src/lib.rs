@@ -240,14 +240,14 @@ mod sync_log {
         }
     }
 
-    /// Initialize the static logger with customized setting.
-    pub fn log_init(setting: LogSetting) {
-        let mut logger = LOGGER.lock().unwrap();
-        logger.init(setting);
-    }
-
-    pub fn log_set(setting: LogSetting) {
-        *LOGSETTING.lock().unwrap() = setting;
+    #[macro_export]
+    macro_rules! log_set {
+        ($($key:ident : $value:expr),*) => {
+            *($crate::LOGSETTING.lock().unwrap()) = $crate::LogSetting {
+                $($key: $value,)*
+                ..$crate::LOGSETTING.lock().unwrap().clone()
+            };
+        };
     }
 
     /// Provide a easier way to clean all the existed logs.
@@ -276,7 +276,7 @@ mod sync_log {
 /// Enumeration of log levels.
 /// This defines the emergency of the log.
 /// (the corresponding number is used to compare the log level to decide write to the log file or not.)
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum LogLevel {
     Trace = 0,
     Debug = 1,

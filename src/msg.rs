@@ -69,15 +69,14 @@ impl std::fmt::Display for LogMessage {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::{log_init, position, LogSetting};
+    use crate::{log_set, position};
 
     #[test]
     pub fn create_a_message() {
-        log_init(LogSetting {
+        log_set!{
             time_zone: 1,
-            time_detailed_display: true,
-            ..Default::default()
-        });
+            time_detailed_display: true
+        };
         let log = LogMessage::new(LogLevel::Info, "test".to_string(), position!());
         println!("{}", log);
     }
