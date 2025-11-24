@@ -1,5 +1,7 @@
 use chrono::{DateTime, FixedOffset, Utc};
 use super::LOGSETTING;
+#[cfg(feature = "async")]
+use super::block_on;
 
 #[derive(Clone, Debug)]
 pub(crate) struct Time {
@@ -24,10 +26,15 @@ impl Time {
     }
 
     /// Format the time
-    #[cfg(not(feature = "async"))]
     fn to_string(&self) -> String {
         let format = "%Y-%m-%d %H:%M:%S%.3f".to_string();
-        if LOGSETTING.lock().unwrap().time_detailed_display {
+        #[cfg(not(feature = "async"))]
+        let time_detailed_display = LOGSETTING.lock().unwrap().time_detailed_display;
+        #[cfg(feature = "async")]
+        let time_detailed_display = block_on(async {
+            LOGSETTING.lock().await.time_detailed_display
+        });
+        if time_detailed_display {
             format!("{} ({})", self.utc.with_timezone(&self.time_offset).format(&format), self.time_offset)
         } else {
             (self.utc.with_timezone(&self.time_offset))

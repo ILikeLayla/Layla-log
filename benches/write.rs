@@ -10,7 +10,7 @@ use tokio::time::Duration;
 #[cfg(feature = "async")]
 mod bench {
     use criterion::Criterion;
-    use layla_log::{clean_log, info, init, Setting};
+    use layla_log::{clean_log, info, log_set};
 
     fn rt() -> tokio::runtime::Runtime {
         tokio::runtime::Builder::new_multi_thread()
@@ -25,10 +25,10 @@ mod bench {
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
                 let task = || async {
-                    init(Setting {
+                    log_set! {
                         single_length: 1219,
-                        ..Default::default()
-                    }).await;
+                        print_out: false
+                    };
                     clean_log().await;
                     let mut handles = Vec::new();
                     for _ in 0..10_000 {
@@ -54,7 +54,8 @@ mod bench {
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
                 log_set!{
-                    single_length: 1219
+                    single_length: 1219,
+                    print_out: false
                 };
                 clean_log();
                 let mut handles = Vec::new();

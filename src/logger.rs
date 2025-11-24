@@ -1,4 +1,4 @@
-use super::{msg::LogMessage, LogLevel, LogSetting, LOGSETTING, PositionTag};
+use super::{msg::LogMessage, LogLevel, LogSetting, PositionTag, LOGSETTING};
 use chrono::FixedOffset;
 #[cfg(not(feature = "async"))]
 use std::fs::{self, File};
@@ -13,9 +13,19 @@ fn get_path(dir_path: &str, time_prefix: &str, index: usize) -> String {
     format!("{}/{}_{}.log", dir_path, time_prefix, index)
 }
 
+#[cfg(not(feature = "async"))]
 fn check_dir(dir_path: &str) {
     if !std::path::Path::new(dir_path).exists() {
         std::fs::create_dir(dir_path).expect("Failed to create directory");
+    }
+}
+
+#[cfg(feature = "async")]
+async fn check_dir(dir_path: &str) {
+    if !tokio::fs::metadata(dir_path).await.is_ok() {
+        tokio::fs::create_dir(dir_path)
+            .await
+            .expect("Failed to create directory");
     }
 }
 
@@ -66,37 +76,13 @@ impl Logger {
 
 #[cfg(feature = "async")]
 impl Logger {
-    /// Customize and initialize the log writer.
-    pub(crate) async fn init(&mut self, setting: Setting) {
-        if self.init {
-            let position = position!().to_string();
-            self.warn("Log writer had been initialized!", position)
-                .await;
-            return;
-        }
-
-        self.file = None;
-        self.used_length = 0;
-
-        self.setting = setting;
-
-        self.init = true;
-        self.current_file_prefix = format!(
-            "{}",
-            chrono::Utc::now()
-                .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
-                .format("%Y-%m-%d")
-        );
-        self.check_dir();
-        self.current_index = self.get_index(&self.current_file_prefix).await;
-    }
-
     /// clear the log directory. (remove all the log files in the directory)
     pub(crate) async fn clear_dir(&mut self) {
-        fs::remove_dir_all(&self.setting.dir_path)
+        let setting = LOGSETTING.lock().await;
+        fs::remove_dir_all(&setting.dir_path)
             .await
             .expect("Cannot remove the dir.");
-        fs::create_dir(&self.setting.dir_path)
+        fs::create_dir(&setting.dir_path)
             .await
             .expect("Cannot create the dir.");
         self.current_index = 0;
@@ -106,54 +92,65 @@ impl Logger {
 
     /// Write a single log message to the file.
     async fn write(&mut self, msg: &LogMessage) {
-        // if the logger is disabled, return directly
-        if self.setting.disabled {
+        let setting = LOGSETTING.lock().await;
+        if !self.enable {
             return;
         }
 
-        for i in msg.split_enter() {
-            if self.file.is_none() {
-                self.file = Some(self.get_file().await);
-            }
+        if self.file.is_none() {
+            self.current_index = self
+                .get_index(&setting.dir_path, &self.current_file_prefix)
+                .await;
+            self.file = Some(self.get_file(&setting.dir_path).await);
+        }
 
+        drop(setting);
+
+        for i in msg.split_enter() {
+            let setting = LOGSETTING.lock().await;
             // check if the time prefix has changed
             // (when a new day begins)
             let time_prefix = format!(
                 "{}",
                 chrono::Utc::now()
-                    .with_timezone(&FixedOffset::east_opt(self.setting.time_zone * 3600).unwrap())
+                    .with_timezone(&FixedOffset::east_opt(setting.time_zone * 3600).unwrap())
                     .format("%Y-%m-%d")
             );
             if self.current_file_prefix != time_prefix {
                 self.current_file_prefix = time_prefix;
-                self.current_index = self.get_index(&self.current_file_prefix).await;
+                self.current_index = self
+                    .get_index(&setting.dir_path, &self.current_file_prefix)
+                    .await;
                 self.used_length = 0;
-                self.file = Some(self.get_file().await);
+                self.file = Some(self.get_file(&setting.dir_path).await);
             };
+            let printout_needed =
+                setting.print_out && setting.terminal_print_level.get_level() <= i.get_level();
+            let file_needed = setting.file_record_level.get_level() <= i.get_level();
+            drop(setting);
 
             // check if should print to terminal.
             // requirement: print out is enabled and the level is high enough
-            if self.setting.print_out
-                && self.setting.terminal_print_level.get_level() <= i.get_level()
-            {
-                println!("{}", i.print())
+            if printout_needed {
+                println!("{}", i)
             };
 
             // check if should write to file.
             // requirement: the level is high enough
-            if self.setting.file_record_level.get_level() <= i.get_level() {
+            if file_needed {
                 self.file
                     .as_mut()
                     .unwrap()
-                    .write_all((i.print() + "\n").as_bytes())
+                    .write_all(format!("{}\n", i).as_bytes())
                     .await
                     .expect("Cannot write into the log file.");
                 self.used_length += 1;
             };
         }
 
+        let setting = LOGSETTING.lock().await;
         // check if the file is full or unlimited size
-        if self.setting.single_length != 0 && self.used_length >= self.setting.single_length {
+        if setting.single_length != 0 && self.used_length >= setting.single_length {
             self.current_index += 1;
             self.used_length = 0;
             self.file = None;
@@ -161,48 +158,39 @@ impl Logger {
     }
 
     /// provide a method to log something by only a given string and [`LogLevel`].
-    pub async fn record(&mut self, log_level: LogLevel, message: &str, position: String) {
-        if !self.init {
-            self.init = true
-        }
-        let mut msg = LogMessage::new(
-            log_level,
-            message.to_string(),
-            self.setting.time_zone,
-            position,
-        );
-        msg.time.detailed_display = self.setting.time_detailed_display;
+    pub async fn record(&mut self, log_level: LogLevel, message: &str, position: PositionTag) {
+        let msg = LogMessage::new(log_level, message.to_string(), position);
         self.write(&msg).await;
     }
 
     /// Record an info log.
-    pub async fn info(&mut self, message: &str, position: String) {
+    pub async fn info(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Info, message, position).await;
     }
 
     /// Record a debug log.
-    pub async fn debug(&mut self, message: &str, position: String) {
+    pub async fn debug(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Debug, message, position).await;
     }
 
     /// Record a warn log.
-    pub async fn warn(&mut self, message: &str, position: String) {
+    pub async fn warn(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Warn, message, position).await;
     }
 
     /// Record an error log.
-    pub async fn error(&mut self, message: &str, position: String) {
+    pub async fn error(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Error, message, position).await;
     }
 
     /// Record a trace log.
-    pub async fn trace(&mut self, message: &str, position: String) {
+    pub async fn trace(&mut self, message: &str, position: PositionTag) {
         self.record(LogLevel::Trace, message, position).await;
     }
 
     /// Get the file object of the log file.
-    async fn get_file(&self) -> File {
-        let path = self.get_path(&self.current_file_prefix, self.current_index);
+    async fn get_file(&self, dir_path: &str) -> File {
+        let path = get_path(dir_path, &self.current_file_prefix, self.current_index);
         // enable read and write and create a new file if not exist
         File::options()
             .read(true)
@@ -215,10 +203,11 @@ impl Logger {
 
     /// Get the index of the current log file.
     /// This is used when resume the logging, since have to keep a continuos order of the log files.
-    async fn get_index(&self, time_prefix: &str) -> usize {
+    async fn get_index(&self, dir_path: &str, time_prefix: &str) -> usize {
+        check_dir(dir_path).await;
         let mut count = 0;
         loop {
-            let path = self.get_path(time_prefix, count);
+            let path = get_path(dir_path, time_prefix, count);
             // if the file exists, then the index is the next one
             if let Ok(_) = File::open(path).await {
                 count += 1
@@ -231,7 +220,6 @@ impl Logger {
 
 #[cfg(not(feature = "async"))]
 impl Logger {
-
     /// clear the log directory.
     pub(crate) fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().unwrap();

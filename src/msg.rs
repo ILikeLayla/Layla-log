@@ -1,4 +1,6 @@
 use super::{time::Time, LogLevel, LOGSETTING, PositionTag};
+#[cfg(feature = "async")]
+use super::block_on;
 
 #[derive(Clone, Debug)]
 pub struct LogMessage {
@@ -14,9 +16,13 @@ pub struct LogMessage {
 
 impl LogMessage {
     /// Creates a new log message
-    #[cfg(not(feature = "async"))]
     pub fn new(level: LogLevel, message: String, position: PositionTag) -> Self {
+        #[cfg(not(feature = "async"))]
         let time_zone = LOGSETTING.lock().unwrap().time_zone;
+        #[cfg(feature = "async")]
+        let time_zone = block_on(async {
+            LOGSETTING.lock().await.time_zone
+        });
         Self {
             level,
             message,
@@ -50,7 +56,12 @@ unsafe impl Send for LogMessage {}
 
 impl std::fmt::Display for LogMessage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        #[cfg(not(feature = "async"))]
         let setting = LOGSETTING.lock().unwrap();
+        #[cfg(feature = "async")]
+        let setting = block_on(async {
+            LOGSETTING.lock().await
+        });
         let position_tag = match (setting.display_scoop, setting.display_path) {
             (true, true) => format!(" [{} @ {}]", self.position.scoop, self.position.path),
             (true, false) => format!(" [{}]", self.position.scoop),
@@ -69,8 +80,10 @@ impl std::fmt::Display for LogMessage {
 #[cfg(test)]
 pub mod tests {
     use super::*;
+    #[cfg(not(feature = "async"))]
     use crate::{log_set, position};
 
+    #[cfg(not(feature = "async"))]
     #[test]
     pub fn create_a_message() {
         log_set!{

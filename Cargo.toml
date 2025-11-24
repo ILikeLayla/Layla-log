@@ -15,10 +15,11 @@ documentation = "https://docs.rs/layla-log/latest/layla_log/"
 name = "layla_log"
 
 [features]
-async = ["tokio"]
+async = ["tokio", "futures"]
 
 [dependencies]
 chrono = "0.4.40"
+futures = { version = "0.3.31", optional = true }
 lazy_static = "1.5.0"
 tokio = { version = "1.44.1", features = ["full"], optional = true }
 

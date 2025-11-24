@@ -20,11 +20,11 @@ fn write_in() {
 #[tokio::test]
 async fn write_in() {
     clean_log().await;
-    init(Setting {
+    log_set! {
         time_zone: 1,
-        ..Default::default()
-    }).await;
-
+        time_detailed_display: true
+    };
+    
     error!("This is an error message");
     warn!("This is a warning message");
     info!("This is an info message");

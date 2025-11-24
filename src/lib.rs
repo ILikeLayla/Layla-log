@@ -26,12 +26,26 @@ use std::sync::Mutex;
 use tokio;
 #[cfg(feature = "async")]
 use tokio::sync::Mutex;
+#[cfg(feature = "async")]
+use std::future::Future;
+#[cfg(feature = "async")]
+use futures;
 
 lazy_static! {
     /// The static logger.
     /// If async feature is enabled, the mutex used is [``tokio::sync::mutex``], otherwise it is [`std::sync::Mutex`].
     pub static ref LOGGER: Arc<Mutex<Logger>> = Arc::new(Mutex::new(Logger::new()));
     pub static ref LOGSETTING: Arc<Mutex<LogSetting>> = Arc::new(Mutex::new(LogSetting::default()));
+}
+
+#[cfg(feature = "async")]
+pub fn block_on<F, T>(future: F) -> F::Output
+where
+    F: Future<Output = T>
+{
+    // let rt = tokio::runtime::Builder::new_current_thread().worker_threads(1).enable_all().build().unwrap();
+    // rt.block_on(future)
+    futures::executor::block_on(future)
 }
 
 /// A macro that returns the name of the function it is called in.
@@ -77,15 +91,19 @@ pub struct PositionTag {
 mod async_log {
     use super::*;
 
-    /// Define a public asynchronous function named `init` that takes a `Setting` parameter.
-    pub async fn init(setting: Setting) {
-        // Acquire a mutable lock on the `LOGGER` (which is presumably a globally accessible logging utility).
-        // The `await` keyword is used here to asynchronously wait for the lock to be acquired.
-        let mut logger = LOGGER.lock().await;
-        // Call the `init` method on the locked logger, passing in the `setting` parameter.
-        // This initializes the logger with the provided settings.
-        logger.init(setting).await;
+    #[macro_export]
+    macro_rules! log_set {
+        ($($key:ident : $value:expr),*) => {
+            {
+                let previous_setting = $crate::LOGSETTING.lock().await.clone();
+                *($crate::LOGSETTING.lock().await) = $crate::LogSetting {
+                    $($key: $value,)*
+                    ..previous_setting
+                };
+            };
+        };
     }
+
 
     /// Define a public asynchronous function named `clean_log`
     pub async fn clean_log() {
@@ -102,7 +120,7 @@ mod async_log {
     #[macro_export]
     macro_rules! error {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().await.error(format!($($arg)*).as_str(), position).await;
         };
     }
@@ -112,7 +130,7 @@ mod async_log {
     #[macro_export]
     macro_rules! warn {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().await.warn(format!($($arg)*).as_str(), position).await;
         };
     }
@@ -122,7 +140,7 @@ mod async_log {
     #[macro_export]
     macro_rules! info {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().await.info(format!($($arg)*).as_str(), position).await;
         };
     }
@@ -132,7 +150,7 @@ mod async_log {
     #[macro_export]
     macro_rules! debug {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().await.debug(format!($($arg)*).as_str(), position).await;
         };
     }
@@ -142,7 +160,7 @@ mod async_log {
     #[macro_export]
     macro_rules! trace {
         ($($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().await.trace(format!($($arg)*).as_str(), position).await;
         };
     }
@@ -152,7 +170,7 @@ mod async_log {
     macro_rules! log {
         // Match the macro invocation with a level expression and a variable number of arguments
         ($level:expr, $($arg:tt)*) => {
-            let position = $crate::position!().to_string();
+            let position = $crate::position!();
             $crate::LOGGER.lock().await.record($level, &format!($($arg)*), position).await;
         }
     }
