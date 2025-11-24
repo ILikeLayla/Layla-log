@@ -73,8 +73,6 @@ pub struct PositionTag {
     pub path: String,
 }
 
-
-
 #[cfg(feature = "async")]
 mod async_log {
     use super::*;
@@ -243,9 +241,12 @@ mod sync_log {
     #[macro_export]
     macro_rules! log_set {
         ($($key:ident : $value:expr),*) => {
-            *($crate::LOGSETTING.lock().unwrap()) = $crate::LogSetting {
-                $($key: $value,)*
-                ..$crate::LOGSETTING.lock().unwrap().clone()
+            {
+                let previous_setting = $crate::LOGSETTING.lock().unwrap().clone();
+                *($crate::LOGSETTING.lock().unwrap()) = $crate::LogSetting {
+                    $($key: $value,)*
+                    ..previous_setting
+                };
             };
         };
     }
