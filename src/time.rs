@@ -1,7 +1,7 @@
-use chrono::{DateTime, FixedOffset, Utc};
-use super::LOGSETTING;
 #[cfg(feature = "async")]
 use super::block_on;
+use super::LOGSETTING;
+use chrono::{DateTime, FixedOffset, Utc};
 
 #[derive(Clone, Debug)]
 pub(crate) struct Time {
@@ -14,10 +14,7 @@ pub(crate) struct Time {
 impl Time {
     /// Pass a time and a specified time zone
     pub fn new(utc: DateTime<Utc>, time_offset: FixedOffset) -> Self {
-        Self {
-            utc,
-            time_offset,
-        }
+        Self { utc, time_offset }
     }
 
     /// Get the current time with specified time zone
@@ -31,11 +28,14 @@ impl Time {
         #[cfg(not(feature = "async"))]
         let time_detailed_display = LOGSETTING.lock().unwrap().time_detailed_display;
         #[cfg(feature = "async")]
-        let time_detailed_display = block_on(async {
-            LOGSETTING.lock().await.time_detailed_display
-        });
+        let time_detailed_display =
+            block_on(async { LOGSETTING.lock().await.time_detailed_display });
         if time_detailed_display {
-            format!("{} ({})", self.utc.with_timezone(&self.time_offset).format(&format), self.time_offset)
+            format!(
+                "{} ({})",
+                self.utc.with_timezone(&self.time_offset).format(&format),
+                self.time_offset
+            )
         } else {
             (self.utc.with_timezone(&self.time_offset))
                 .format(&format)

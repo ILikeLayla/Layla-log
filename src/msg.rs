@@ -1,6 +1,6 @@
-use super::{time::Time, LogLevel, LOGSETTING, PositionTag};
 #[cfg(feature = "async")]
 use super::block_on;
+use super::{time::Time, LogLevel, PositionTag, LOGSETTING};
 
 #[derive(Clone, Debug)]
 pub struct LogMessage {
@@ -20,9 +20,7 @@ impl LogMessage {
         #[cfg(not(feature = "async"))]
         let time_zone = LOGSETTING.lock().unwrap().time_zone;
         #[cfg(feature = "async")]
-        let time_zone = block_on(async {
-            LOGSETTING.lock().await.time_zone
-        });
+        let time_zone = block_on(async { LOGSETTING.lock().await.time_zone });
         Self {
             level,
             message,
@@ -59,9 +57,7 @@ impl std::fmt::Display for LogMessage {
         #[cfg(not(feature = "async"))]
         let setting = LOGSETTING.lock().unwrap();
         #[cfg(feature = "async")]
-        let setting = block_on(async {
-            LOGSETTING.lock().await
-        });
+        let setting = block_on(async { LOGSETTING.lock().await });
         let position_tag = match (setting.display_scoop, setting.display_path) {
             (true, true) => format!(" [{} @ {}]", self.position.scoop, self.position.path),
             (true, false) => format!(" [{}]", self.position.scoop),
@@ -86,7 +82,7 @@ pub mod tests {
     #[cfg(not(feature = "async"))]
     #[test]
     pub fn create_a_message() {
-        log_set!{
+        log_set! {
             time_zone: 1,
             time_detailed_display: true
         };
@@ -97,7 +93,10 @@ pub mod tests {
     #[test]
     fn print_message() {
         let log = LogMessage {
-            position: PositionTag { scoop: "test_scoop".to_string(), path: "test_path".to_string() },
+            position: PositionTag {
+                scoop: "test_scoop".to_string(),
+                path: "test_path".to_string(),
+            },
             level: LogLevel::Info,
             message: "test message".to_string(),
             time: Time::now(0),

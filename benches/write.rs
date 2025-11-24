@@ -32,7 +32,9 @@ mod bench {
                     clean_log().await;
                     let mut handles = Vec::new();
                     for _ in 0..10_000 {
-                        handles.push(tokio::spawn(async { info!("Hello world"); }))
+                        handles.push(tokio::spawn(async {
+                            info!("Hello world");
+                        }))
                     }
                     for handle in handles {
                         handle.await.unwrap();
@@ -53,7 +55,7 @@ mod bench {
     pub fn write_a_lot(c: &mut Criterion) {
         c.bench_function("write_a_lot", |b| {
             b.iter(|| {
-                log_set!{
+                log_set! {
                     single_length: 1219,
                     print_out: false
                 };

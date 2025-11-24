@@ -2,8 +2,7 @@
 //! It can be used to write logs in a program. The logs can be written to a dictionary.
 //! The log level can be set to different levels (Error, Warn, Debug, Info and Trace).
 
-// TODO: Seperate the LogSetting from the Logger
-// TODO: do the same update to the async part
+// TODO: documentation
 
 mod logger;
 mod msg;
@@ -18,7 +17,11 @@ pub use async_log::*;
 #[cfg(not(feature = "async"))]
 pub use sync_log::*;
 
+#[cfg(feature = "async")]
+use futures;
 use lazy_static::lazy_static;
+#[cfg(feature = "async")]
+use std::future::Future;
 use std::sync::Arc;
 #[cfg(not(feature = "async"))]
 use std::sync::Mutex;
@@ -26,10 +29,6 @@ use std::sync::Mutex;
 use tokio;
 #[cfg(feature = "async")]
 use tokio::sync::Mutex;
-#[cfg(feature = "async")]
-use std::future::Future;
-#[cfg(feature = "async")]
-use futures;
 
 lazy_static! {
     /// The static logger.
@@ -41,7 +40,7 @@ lazy_static! {
 #[cfg(feature = "async")]
 pub fn block_on<F, T>(future: F) -> F::Output
 where
-    F: Future<Output = T>
+    F: Future<Output = T>,
 {
     // let rt = tokio::runtime::Builder::new_current_thread().worker_threads(1).enable_all().build().unwrap();
     // rt.block_on(future)
@@ -103,7 +102,6 @@ mod async_log {
             };
         };
     }
-
 
     /// Define a public asynchronous function named `clean_log`
     pub async fn clean_log() {

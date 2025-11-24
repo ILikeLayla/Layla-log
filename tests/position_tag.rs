@@ -8,14 +8,14 @@ fn write_in() {
         display_path: true,
         display_scoop: true
     };
-    
+
     error!("This is an error message");
     warn!("This is a warning message");
     info!("This is an info message");
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set!{
+    log_set! {
         display_path: false,
         display_scoop: true
     };
@@ -26,7 +26,7 @@ fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set!{
+    log_set! {
         display_path: true,
         display_scoop: false
     };
@@ -37,7 +37,7 @@ fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set!{
+    log_set! {
         display_path: false,
         display_scoop: false
     };
@@ -47,26 +47,25 @@ fn write_in() {
     info!("This is an info message");
     debug!("This is a debug message");
     trace!("This is a trace message");
-
 }
 
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn write_in() {
     clean_log().await;
-    
+
     log_set! {
         display_path: true,
         display_scoop: true
     };
-    
+
     error!("This is an error message");
     warn!("This is a warning message");
     info!("This is an info message");
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set!{
+    log_set! {
         display_path: false,
         display_scoop: true
     };
@@ -77,7 +76,7 @@ async fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set!{
+    log_set! {
         display_path: true,
         display_scoop: false
     };
@@ -88,7 +87,7 @@ async fn write_in() {
     debug!("This is a debug message");
     trace!("This is a trace message");
 
-    log_set!{
+    log_set! {
         display_path: false,
         display_scoop: false
     };

@@ -8,7 +8,7 @@ fn write_in() {
         time_zone: 1,
         time_detailed_display: true
     };
-    
+
     error!("This is an error message");
     warn!("This is a warning message");
     info!("This is an info message");
@@ -24,7 +24,7 @@ async fn write_in() {
         time_zone: 1,
         time_detailed_display: true
     };
-    
+
     error!("This is an error message");
     warn!("This is a warning message");
     info!("This is an info message");
