@@ -29,7 +29,7 @@ mod bench {
                         single_length: 1219,
                         print_out: false
                     };
-                    clean_log().await;
+                    clean_log!();
                     let mut handles = Vec::new();
                     for _ in 0..10_000 {
                         handles.push(tokio::spawn(async {
@@ -59,7 +59,7 @@ mod bench {
                     single_length: 1219,
                     print_out: false
                 };
-                clean_log();
+                clean_log!();
                 let mut handles = Vec::new();
                 for _ in 0..10_000 {
                     handles.push(std::thread::spawn(|| {

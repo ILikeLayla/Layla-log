@@ -77,7 +77,7 @@ impl Logger {
 #[cfg(feature = "async")]
 impl Logger {
     /// clear the log directory. (remove all the log files in the directory)
-    pub(crate) async fn clear_dir(&mut self) {
+    pub async fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().await;
         fs::remove_dir_all(&setting.dir_path)
             .await
@@ -221,7 +221,7 @@ impl Logger {
 #[cfg(not(feature = "async"))]
 impl Logger {
     /// clear the log directory.
-    pub(crate) fn clear_dir(&mut self) {
+    pub fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().unwrap();
         fs::remove_dir_all(&setting.dir_path).expect("Cannot remove the dir.");
         fs::create_dir(&setting.dir_path).expect("Cannot create the dir.");

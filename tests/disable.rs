@@ -3,10 +3,10 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn test_disable() {
-    clean_log();
+    clean_log!();
 
     // Disable all logging
-    disable_log();
+    disable_log!();
 
     // Test that logging is disabled
     info!("This should not be logged");
@@ -16,17 +16,17 @@ fn test_disable() {
     trace!("This should not be logged");
 
     // Enable logging for a specific module
-    enable_log();
+    enable_log!();
     info!("This should be logged");
 }
 
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn test_disable() {
-    clean_log().await;
+    clean_log!();
 
     // Disable all logging
-    disable_log().await;
+    disable_log!();
 
     // Test that logging is disabled
     error!("This should not be logged");
@@ -36,6 +36,6 @@ async fn test_disable() {
     trace!("This should not be logged");
 
     // Enable logging for a specific module
-    enable_log().await;
+    enable_log!();
     info!("This should be logged");
 }

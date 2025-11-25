@@ -6,7 +6,7 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn write_by_multi_threads() {
-    clean_log();
+    clean_log!();
     let mut handles = vec![];
     for i in 0..1219 {
         let handle = std::thread::spawn(move || {
@@ -24,7 +24,7 @@ fn write_by_multi_threads() {
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn write_by_multi_threads() {
-    clean_log().await;
+    clean_log!();
     let mut handles = vec![];
     for i in 0..1219 {
         let handle = tokio::spawn(async move {

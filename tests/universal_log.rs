@@ -3,7 +3,7 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn universal_log() {
-    clean_log();
+    clean_log!();
 
     log!(LogLevel::Trace, "Hello, {}!", "world");
 }
@@ -11,7 +11,7 @@ fn universal_log() {
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn universal_log() {
-    clean_log().await;
+    clean_log!();
 
     log!(LogLevel::Trace, "Hello, {}!", "world");
 }

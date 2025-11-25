@@ -3,7 +3,7 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn write_in() {
-    clean_log();
+    clean_log!();
     log_set! {
         time_zone: 1,
         time_detailed_display: true
@@ -19,7 +19,7 @@ fn write_in() {
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn write_in() {
-    clean_log().await;
+    clean_log!();
     log_set! {
         time_zone: 1,
         time_detailed_display: true

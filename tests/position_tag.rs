@@ -3,7 +3,7 @@ use layla_log::*;
 #[cfg(not(feature = "async"))]
 #[test]
 fn write_in() {
-    clean_log();
+    clean_log!();
     log_set! {
         display_path: true,
         display_scoop: true
@@ -52,7 +52,7 @@ fn write_in() {
 #[cfg(feature = "async")]
 #[tokio::test]
 async fn write_in() {
-    clean_log().await;
+    clean_log!();
 
     log_set! {
         display_path: true,

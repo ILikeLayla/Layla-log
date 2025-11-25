@@ -13,11 +13,6 @@ pub use logger::*;
 pub use setting::LogSetting;
 
 #[cfg(feature = "async")]
-pub use async_log::*;
-#[cfg(not(feature = "async"))]
-pub use sync_log::*;
-
-#[cfg(feature = "async")]
 use futures;
 use lazy_static::lazy_static;
 #[cfg(feature = "async")]
@@ -88,8 +83,6 @@ pub struct PositionTag {
 
 #[cfg(feature = "async")]
 mod async_log {
-    use super::*;
-
     #[macro_export]
     macro_rules! log_set {
         ($($key:ident : $value:expr),*) => {
@@ -103,14 +96,12 @@ mod async_log {
         };
     }
 
-    /// Define a public asynchronous function named `clean_log`
-    pub async fn clean_log() {
-        // Acquire a mutable lock on the LOGGER, which is presumably a globally accessible logging utility
-        // The `await` keyword is used here to asynchronously wait for the lock to be acquired
-        let mut writer = LOGGER.lock().await;
-        // Call the `clear_dir` method on the locked writer to clear the directory where logs are stored
-        // This method is also awaited asynchronously, indicating it performs an I/O operation or similar
-        writer.clear_dir().await;
+    #[macro_export]
+    macro_rules! clean_log {
+        () => {{
+            let mut writer = $crate::LOGGER.lock().await;
+            writer.clear_dir().await;
+        };};
     }
 
     /// Macro to log error message.
@@ -173,29 +164,25 @@ mod async_log {
         }
     }
 
-    /// Define a public asynchronous function named `enable_log`
-    pub async fn enable_log() {
-        // Acquire a mutable lock on the LOGGER, which is presumably a globally accessible logging utility
-        // The `await` keyword is used here to asynchronously wait for the lock to be acquired
-        let mut writer = LOGGER.lock().await;
-        // Call the `enable` method on the locked writer to enable logging
-        writer.enable();
+    #[macro_export]
+    macro_rules! enable_log {
+        () => {{
+            let mut writer = $crate::LOGGER.lock().await;
+            writer.enable();
+        }};
     }
 
-    /// Define a public asynchronous function named `disable_log`
-    pub async fn disable_log() {
-        // Acquire a mutable lock on the LOGGER, which is presumably a globally accessible logging mechanism
-        // The `await` keyword is used here to asynchronously wait for the lock to be acquired
-        let mut writer = LOGGER.lock().await;
-        // Call the `disable` method on the locked writer to disable logging
-        writer.disable();
+    #[macro_export]
+    macro_rules! disable_log {
+        () => {{
+            let mut writer = $crate::LOGGER.lock().await;
+            writer.disable();
+        }};
     }
 }
 
 #[cfg(not(feature = "async"))]
 mod sync_log {
-    use super::*;
-
     /// Macro to log error message.
     /// First lock the logger in static, then log the message.
     #[macro_export]
@@ -267,26 +254,28 @@ mod sync_log {
         };
     }
 
-    /// Provide a easier way to clean all the existed logs.
-    pub fn clean_log() {
-        let mut writer = LOGGER.lock().expect("Cannot lock the logger.");
-        writer.clear_dir();
+    #[macro_export]
+    macro_rules! clean_log {
+        () => {{
+            let mut writer = $crate::LOGGER.lock().unwrap();
+            writer.clear_dir();
+        };};
     }
 
-    /// Public function to enable logging
-    pub fn enable_log() {
-        // Lock the LOGGER to ensure thread-safe access
-        let mut writer = LOGGER.lock().expect("Cannot lock the logger.");
-        // Enable logging using the writer
-        writer.enable();
+    #[macro_export]
+    macro_rules! enable_log {
+        () => {{
+            let mut writer = $crate::LOGGER.lock().unwrap();
+            writer.enable();
+        }};
     }
 
-    /// Public function to disable logging
-    pub fn disable_log() {
-        // Lock the LOGGER to ensure thread-safe access
-        let mut writer = LOGGER.lock().expect("Cannot lock the logger.");
-        // Disable logging using the writer
-        writer.disable();
+    #[macro_export]
+    macro_rules! disable_log {
+        () => {{
+            let mut writer = $crate::LOGGER.lock().unwrap();
+            writer.disable();
+        }};
     }
 }
 
