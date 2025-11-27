@@ -1,10 +1,10 @@
 [package]
 name = "layla-log"
-version = "0.3.2"
+version = "0.3.3-alpha"
 edition = "2021"
 description = "A simple logger library."
 license = "MIT"
-authors = ["ILikeLayla <chen_rui_tao0525@163.com>"]
+authors = ["ILikeLayla <layla.github@ILikeLayla.top>"]
 readme = "README.md"
 homepage = "https://github.com/ILikeLayla/Layla-log"
 documentation = "https://docs.rs/layla-log/latest/layla_log/"

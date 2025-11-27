@@ -6,7 +6,7 @@ fn write_in() {
     clean_log!();
     log_set! {
         display_path: true,
-        display_scoop: true
+        display_scope: true
     };
 
     error!("This is an error message");
@@ -17,7 +17,7 @@ fn write_in() {
 
     log_set! {
         display_path: false,
-        display_scoop: true
+        display_scope: true
     };
 
     error!("This is an error message");
@@ -28,7 +28,7 @@ fn write_in() {
 
     log_set! {
         display_path: true,
-        display_scoop: false
+        display_scope: false
     };
 
     error!("This is an error message");
@@ -39,7 +39,7 @@ fn write_in() {
 
     log_set! {
         display_path: false,
-        display_scoop: false
+        display_scope: false
     };
 
     error!("This is an error message");
@@ -56,7 +56,7 @@ async fn write_in() {
 
     log_set! {
         display_path: true,
-        display_scoop: true
+        display_scope: true
     };
 
     error!("This is an error message");
@@ -67,7 +67,7 @@ async fn write_in() {
 
     log_set! {
         display_path: false,
-        display_scoop: true
+        display_scope: true
     };
 
     error!("This is an error message");
@@ -78,7 +78,7 @@ async fn write_in() {
 
     log_set! {
         display_path: true,
-        display_scoop: false
+        display_scope: false
     };
 
     error!("This is an error message");
@@ -89,7 +89,7 @@ async fn write_in() {
 
     log_set! {
         display_path: false,
-        display_scoop: false
+        display_scope: false
     };
 
     error!("This is an error message");

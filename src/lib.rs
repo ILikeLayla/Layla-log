@@ -2,8 +2,6 @@
 //! It can be used to write logs in a program. The logs can be written to a dictionary.
 //! The log level can be set to different levels (Error, Warn, Debug, Info and Trace).
 
-// TODO: documentation
-
 mod logger;
 mod msg;
 mod setting;
@@ -29,20 +27,22 @@ lazy_static! {
     /// The static logger.
     /// If async feature is enabled, the mutex used is [``tokio::sync::mutex``], otherwise it is [`std::sync::Mutex`].
     pub static ref LOGGER: Arc<Mutex<Logger>> = Arc::new(Mutex::new(Logger::new()));
+
+    /// The static log setting.
+    /// If async feature is enabled, the mutex used is [``tokio::sync::mutex``], otherwise it is [`std::sync::Mutex`].
     pub static ref LOGSETTING: Arc<Mutex<LogSetting>> = Arc::new(Mutex::new(LogSetting::default()));
 }
 
+#[doc(hidden)]
 #[cfg(feature = "async")]
-pub fn block_on<F, T>(future: F) -> F::Output
+pub(crate) fn block_on<F, T>(future: F) -> F::Output
 where
     F: Future<Output = T>,
 {
-    // let rt = tokio::runtime::Builder::new_current_thread().worker_threads(1).enable_all().build().unwrap();
-    // rt.block_on(future)
     futures::executor::block_on(future)
 }
 
-/// A macro that returns the name of the function it is called in.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! func {
     () => {{
@@ -59,7 +59,7 @@ macro_rules! func {
     }};
 }
 
-/// A macro that returns the current position in the code.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! position {
     () => {{
@@ -67,26 +67,28 @@ macro_rules! position {
         let file = file!();
         let line = line!();
         let column = column!();
-        // format!("{} @ {}:{}:{}", function, file, line, column)
         $crate::PositionTag {
-            scoop: function.to_string(),
+            scope: function.to_string(),
             path: format!("{}:{}:{}", file, line, column),
         }
     }};
 }
 
+/// This is use to store the position of the log. And whether show the scope or path in the log is decided by [`LOGSETTING`].
 #[derive(Clone, Debug)]
 pub struct PositionTag {
-    pub scoop: String,
+    pub scope: String,
     pub path: String,
 }
 
 #[cfg(feature = "async")]
 mod async_log {
+    /// set the logger by the passing the key and value
     #[macro_export]
     macro_rules! log_set {
         ($($key:ident : $value:expr),*) => {
             {
+                // have to clone the setting first to avoid deadlock
                 let previous_setting = $crate::LOGSETTING.lock().await.clone();
                 *($crate::LOGSETTING.lock().await) = $crate::LogSetting {
                     $($key: $value,)*
@@ -105,7 +107,6 @@ mod async_log {
     }
 
     /// Macro to log error message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! error {
         ($($arg:tt)*) => {
@@ -115,7 +116,6 @@ mod async_log {
     }
 
     /// Macro to log warning message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! warn {
         ($($arg:tt)*) => {
@@ -125,7 +125,6 @@ mod async_log {
     }
 
     /// Macro to log info message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! info {
         ($($arg:tt)*) => {
@@ -135,7 +134,6 @@ mod async_log {
     }
 
     /// Macro to log debug message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! debug {
         ($($arg:tt)*) => {
@@ -145,7 +143,6 @@ mod async_log {
     }
 
     /// Macro to log trace message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! trace {
         ($($arg:tt)*) => {
@@ -154,10 +151,9 @@ mod async_log {
         };
     }
 
-    /// Define a macro named `log` with two parameters: `$level` and `$($arg:tt)*`
+    /// To record the log with given level.
     #[macro_export]
     macro_rules! log {
-        // Match the macro invocation with a level expression and a variable number of arguments
         ($level:expr, $($arg:tt)*) => {
             let position = $crate::position!();
             $crate::LOGGER.lock().await.record($level, &format!($($arg)*), position).await;
@@ -184,7 +180,6 @@ mod async_log {
 #[cfg(not(feature = "async"))]
 mod sync_log {
     /// Macro to log error message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! error {
         ($($arg:tt)*) => {
@@ -194,7 +189,6 @@ mod sync_log {
     }
 
     /// Macro to log warning message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! warn {
         ($($arg:tt)*) => {
@@ -204,7 +198,6 @@ mod sync_log {
     }
 
     /// Macro to log info message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! info {
         ($($arg:tt)*) => {
@@ -214,7 +207,6 @@ mod sync_log {
     }
 
     /// Macro to log debug message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! debug {
         ($($arg:tt)*) => {
@@ -224,7 +216,6 @@ mod sync_log {
     }
 
     /// Macro to log trace message.
-    /// First lock the logger in static, then log the message.
     #[macro_export]
     macro_rules! trace {
         ($($arg:tt)*) => {
@@ -233,6 +224,7 @@ mod sync_log {
         };
     }
 
+    /// To record the log with given level.
     #[macro_export]
     macro_rules! log {
         ($level:expr, $($arg:tt)*) => {
@@ -241,6 +233,7 @@ mod sync_log {
         }
     }
 
+    /// set the logger by the passing the key and value
     #[macro_export]
     macro_rules! log_set {
         ($($key:ident : $value:expr),*) => {

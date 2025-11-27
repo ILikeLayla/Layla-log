@@ -19,7 +19,9 @@ pub struct LogSetting {
     pub time_zone: i32,
     /// setting whether to print the log to the terminal.
     pub print_out: bool,
-    pub display_scoop: bool,
+    /// set whether to print the scope of the log.
+    pub display_scope: bool,
+    /// set whether to print the path of the log.
     pub display_path: bool,
 }
 
@@ -42,7 +44,7 @@ impl std::default::Default for LogSetting {
             time_zone: 0,
             print_out: true,
             display_path: true,
-            display_scoop: true,
+            display_scope: true,
         }
     }
 }

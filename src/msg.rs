@@ -58,12 +58,13 @@ impl std::fmt::Display for LogMessage {
         let setting = LOGSETTING.lock().unwrap();
         #[cfg(feature = "async")]
         let setting = block_on(async { LOGSETTING.lock().await });
-        let position_tag = match (setting.display_scoop, setting.display_path) {
-            (true, true) => format!(" [{} @ {}]", self.position.scoop, self.position.path),
-            (true, false) => format!(" [{}]", self.position.scoop),
+        let position_tag = match (setting.display_scope, setting.display_path) {
+            (true, true) => format!(" [{} @ {}]", self.position.scope, self.position.path),
+            (true, false) => format!(" [{}]", self.position.scope),
             (false, true) => format!(" [{}]", self.position.path),
             (false, false) => String::new(),
         };
+        // drop the lock to allow the format function of self.time can get the lock
         drop(setting);
         write!(
             f,
@@ -94,7 +95,7 @@ pub mod tests {
     fn print_message() {
         let log = LogMessage {
             position: PositionTag {
-                scoop: "test_scoop".to_string(),
+                scope: "test_scoop".to_string(),
                 path: "test_path".to_string(),
             },
             level: LogLevel::Info,

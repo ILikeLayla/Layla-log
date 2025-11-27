@@ -3,11 +3,36 @@
 A simple logger library. This library provides a simple log writer and simple log-level control. It can record logs to a target directory and also print them to the terminal. The log can be set to different levels (Error, Warn, Debug, Info and Trace). Only the logs with significant levels will be recorded to file or printed to the terminal. Moreover, when the log file size exceeds a certain limit, it will automatically route to new files with indexing.
 
 ## Features list
+
 - async (details see [async](./doc/async.md))
 
 ## Usage
 
-Macros are provided to use the log writer easily, but before it here are several settings for the writer:
+It can be used without any pre-setting.
+
+```rust
+use layla_log::*;
+
+fn main() {
+    error!("This is an error message");
+    warn!("This is a warning message");
+    info!("This is an info message");
+    debug!("This is a debug message");
+    trace!("This is a trace message");
+}
+```
+
+and these are the output in the log file and the things are printed to terminal:
+
+```log
+TIME ERROR [SCOPE @ PATH] This is an error message
+TIME WARN  [SCOPE @ PATH] This is a warning message
+TIME INFO  [SCOPE @ PATH] This is an info message
+TIME DEBUG [SCOPE @ PATH] This is a debug message
+TIME TRACE [SCOPE @ PATH] This is a trace message
+```
+
+And by using the `log_set!` macro, some things can be customized.
 
 - dir_path
   - where the log file will be saved
@@ -22,11 +47,14 @@ Macros are provided to use the log writer easily, but before it here are several
   - the time zone of the log file name and log message time
 - time_detailed_display
   - whether to display detailed time in log message (whether time zone is included)
+- file_time_format
+  - it decides the format of the time record in the file
 - print_out
   - whether to print the log to terminal
-- disabled
-  - whether disable the logger or not
-
+- display_scope
+  - set whether display the scope in the log message
+- display_file
+  - set whether display the file path in the log message
 
 This is an example:
 
@@ -34,16 +62,9 @@ This is an example:
 use layla_log::*;
 
 fn main() {
-    init(Setting {
-        dir_path: "/path/to/dir",
-        single_length: 1219,
-        file_record_level: LogLevel::Trace,
-        terminal_print_level: LogLevel::Debug,
-        time_detailed_display: true,
-        time_zone: 0,
-        print_out: true,
-        disabled: false
-    });
+    log_set! {
+      single_length: 1219
+    };
     error!("This is an error message");
     warn!("This is a warning message");
     info!("This is an info message");
@@ -52,87 +73,18 @@ fn main() {
 }
 ```
 
-and these are the output in the log file:
+And those values which are not given, the setting will inherit the previous setting. The `LogSetting` will use the default values while initializing. And these are the default values:
 
-```log
-{TIME} (+00:00) ERROR	[main @ src\main.rs:14] This is an error message
-{TIME} (+00:00) WARN	[main @ src\main.rs:15] This is a warning message
-{TIME} (+00:00) INFO	[main @ src\main.rs:17] This is an info message
-{TIME} (+00:00) DEBUG	[main @ src\main.rs:16] This is a debug message
-{TIME} (+00:00) TRACE	[main @ src\main.rs:18] This is a trace message
-```
-
-and these are the output in the terminal:
-
-```log
-{TIME} (+00:00) ERROR	[main @ src\main.rs:14] This is an error message
-{TIME} (+00:00) WARN	[main @ src\main.rs:15] This is a warning message
-{TIME} (+00:00) INFO	[main @ src\main.rs:17] This is an info message
-{TIME} (+00:00) DEBUG	[main @ src\main.rs:16] This is a debug message
-```
-
-Furthermore, all the settings have a default value:
 - `"./logs/"` as the default dir_path
 - `0` as the default log file single_length
 - `LogLevel::Trace` as the default file_recode_level
 - `LogLevel::Debug` as the default terminal_print_level for debug assertions, `LogLevel::Info` for default terminal_print_level for release assertions
-- `0` as the default time_zone offset
+- `0` as the default time_zone
+- `"%Y-%m-%d"` as the default file_time_format
 - `false` as the default time_detailed_display
 - `true` as the default print_out
-- `false` as the default disabled
-
-These default settings can be used by:
-- Using the default setting to initialize the logger
-- No explicit initialization.
-
-Here is an example using the default setting:
-
-```rust
-use layla_log::*;
-
-fn main() {
-    init(Setting::default());
-    error!("This is an error message");
-    warn!("This is a warning message");
-    info!("This is an info message");
-    debug!("This is a debug message");
-    trace!("This is a trace message");
-}
-```
-
-and these are the output in the log file:
-
-```log
-{TIME} ERROR	[main @ src\main.rs:14] This is an error message
-{TIME} WARN   [main @ src\main.rs:15] This is a warning message
-{TIME} INFO   [main @ src\main.rs:17] This is an info message
-{TIME} DEBUG	[main @ src\main.rs:16] This is a debug message
-{TIME} TRACE  [main @ src\main.rs:18] This is a trace message
-```
-
-and these are the output in the terminal when release assertions:
-
-```log
-{TIME} ERROR	[main @ src\main.rs:14] This is an error message
-{TIME} WARN   [main @ src\main.rs:15] This is a warning message
-{TIME} INFO   [main @ src\main.rs:17] This is an info message
-```
-
-Here is an example without any explicit initialization:
-
-```rust
-use layla_log::*;
-
-fn main() {
-    error!("This is an error message");
-    warn!("This is a warning message");
-    info!("This is an info message");
-    debug!("This is a debug message");
-    trace!("This is a trace message");
-}
-```
-
-and the both output in the log file and the terminal are the same as using the first method.
+- `true` as the default display_path
+- `true` as the default display_scope
 
 In some cases, log is only used for debugging, and need to clean the log files each time the program runs, then `clean_log()` can be applied to clear the log file.
 
@@ -181,18 +133,9 @@ fn main() {
 
 ```
 
-## Cases
-
-### Double initialization
-calling `init()` for multiple times won't lead to a panic, instead, it will record a warn log: 
-
-```log
-{TIME} WARN	[init @ src\logger.rs:97] Log writer had been initialized!
-```
-
 ## Method list
 
-- `init(setting: Setting)`
+- `clean_log()`
 - `disable_log()`
 - `enable_log()`
 
@@ -204,3 +147,4 @@ calling `init()` for multiple times won't lead to a panic, instead, it will reco
 - `warn!`
 - `error!`
 - `log!`
+- `set_log!`

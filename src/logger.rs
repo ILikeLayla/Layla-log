@@ -40,6 +40,7 @@ pub struct Logger {
     used_length: usize,
     /// a buffer to store the prefix of log files' name.
     current_file_prefix: String,
+    /// to record down the logger is enabled or not.
     enable: bool,
 }
 
@@ -104,6 +105,7 @@ impl Logger {
             self.file = Some(self.get_file(&setting.dir_path).await);
         }
 
+        // drop the lock to avoid deadlock
         drop(setting);
 
         for i in msg.split_enter() {
@@ -124,19 +126,21 @@ impl Logger {
                 self.used_length = 0;
                 self.file = Some(self.get_file(&setting.dir_path).await);
             };
-            let printout_needed =
-                setting.print_out && setting.terminal_print_level.get_level() <= i.get_level();
-            let file_needed = setting.file_record_level.get_level() <= i.get_level();
-            drop(setting);
 
             // check if should print to terminal.
-            // requirement: print out is enabled and the level is high enough
+            // requirement: the log is significantly important and printout is enabled
+            let printout_needed =
+                setting.print_out && setting.terminal_print_level.get_level() <= i.get_level();
+            // check if should write to file.
+            // requirement: the log is significantly important and file record is enabled
+            let file_needed = setting.file_record_level.get_level() <= i.get_level();
+
+            drop(setting);
+
             if printout_needed {
                 println!("{}", i)
             };
 
-            // check if should write to file.
-            // requirement: the level is high enough
             if file_needed {
                 self.file
                     .as_mut()
@@ -208,7 +212,7 @@ impl Logger {
         let mut count = 0;
         loop {
             let path = get_path(dir_path, time_prefix, count);
-            // if the file exists, then the index is the next one
+            // to find the last index which is not exist
             if let Ok(_) = File::open(path).await {
                 count += 1
             } else {

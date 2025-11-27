@@ -30,6 +30,7 @@ impl Time {
         #[cfg(feature = "async")]
         let time_detailed_display =
             block_on(async { LOGSETTING.lock().await.time_detailed_display });
+        // check the setting in the [`LOGSETTING`] (require lock)
         if time_detailed_display {
             format!(
                 "{} ({})",
