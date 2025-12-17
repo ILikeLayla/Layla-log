@@ -80,6 +80,7 @@ impl Logger {
     /// clear the log directory. (remove all the log files in the directory)
     pub async fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().await;
+        check_dir(&setting.dir_path).await;
         fs::remove_dir_all(&setting.dir_path)
             .await
             .expect("Cannot remove the dir.");
@@ -227,6 +228,7 @@ impl Logger {
     /// clear the log directory.
     pub fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().unwrap();
+        check_dir(&setting.dir_path);
         fs::remove_dir_all(&setting.dir_path).expect("Cannot remove the dir.");
         fs::create_dir(&setting.dir_path).expect("Cannot create the dir.");
         self.current_index = 0;
