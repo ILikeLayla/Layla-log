@@ -26,11 +26,11 @@ use tokio::sync::Mutex;
 lazy_static! {
     /// The static logger.
     /// If async feature is enabled, the mutex used is [``tokio::sync::mutex``], otherwise it is [`std::sync::Mutex`].
-    pub static ref LOGGER: Arc<Mutex<Logger>> = Arc::new(Mutex::new(Logger::new()));
+    pub static ref LOGGER: Arc<Mutex<Logger<'static>>> = Arc::new(Mutex::new(Logger::new()));
 
     /// The static log setting.
     /// If async feature is enabled, the mutex used is [``tokio::sync::mutex``], otherwise it is [`std::sync::Mutex`].
-    pub static ref LOGSETTING: Arc<Mutex<LogSetting>> = Arc::new(Mutex::new(LogSetting::default()));
+    pub static ref LOGSETTING: Arc<Mutex<LogSetting<'static>>> = Arc::new(Mutex::new(LogSetting::default()));
 }
 
 #[doc(hidden)]

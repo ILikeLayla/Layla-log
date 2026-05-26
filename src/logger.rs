@@ -31,7 +31,7 @@ async fn check_dir(dir_path: &str) {
 
 /// A writer for buffering the log and writing them into the suitable files.
 #[derive(Debug)]
-pub struct Logger {
+pub struct Logger<'a: 'static> {
     /// the file that is currently being written.
     file: Option<File>,
     /// the current index of the file.
@@ -39,12 +39,12 @@ pub struct Logger {
     /// the length of the log that have been written.
     used_length: usize,
     /// a buffer to store the prefix of log files' name.
-    current_file_prefix: String,
+    current_file_prefix: &'a str,
     /// to record down the logger is enabled or not.
     enable: bool,
 }
 
-impl Logger {
+impl<'a> Logger<'a> {
     /// Initialize the logger with all default setting.
     pub(crate) fn new() -> Self {
         let default_setting = LogSetting::default();
@@ -53,13 +53,16 @@ impl Logger {
             file: None,
             current_index: 0,
             used_length: 0,
-            current_file_prefix: format!(
-                "{}",
-                chrono::Utc::now()
-                    .with_timezone(
-                        &FixedOffset::east_opt(default_setting.time_zone * 3600).unwrap()
-                    )
-                    .format(&default_setting.file_time_format)
+            current_file_prefix: Box::leak(
+                format!(
+                    "{}",
+                    chrono::Utc::now()
+                        .with_timezone(
+                            &FixedOffset::east_opt(default_setting.time_zone * 3600).unwrap()
+                        )
+                        .format(&default_setting.file_time_format)
+                )
+                .into_boxed_str(),
             ),
             enable: true,
         };
@@ -76,7 +79,7 @@ impl Logger {
 }
 
 #[cfg(feature = "async")]
-impl Logger {
+impl<'a> Logger<'a> {
     /// clear the log directory. (remove all the log files in the directory)
     pub async fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().await;
@@ -120,7 +123,7 @@ impl Logger {
                     .format("%Y-%m-%d")
             );
             if self.current_file_prefix != time_prefix {
-                self.current_file_prefix = time_prefix;
+                self.current_file_prefix = Box::leak(time_prefix.into_boxed_str());
                 self.current_index = self
                     .get_index(&setting.dir_path, &self.current_file_prefix)
                     .await;
@@ -224,7 +227,7 @@ impl Logger {
 }
 
 #[cfg(not(feature = "async"))]
-impl Logger {
+impl<'a> Logger<'a> {
     /// clear the log directory.
     pub fn clear_dir(&mut self) {
         let setting = LOGSETTING.lock().unwrap();
@@ -234,11 +237,14 @@ impl Logger {
         self.current_index = 0;
         self.used_length = 0;
         self.file = None;
-        self.current_file_prefix = format!(
-            "{}",
-            chrono::Utc::now()
-                .with_timezone(&FixedOffset::east_opt(setting.time_zone * 3600).unwrap())
-                .format(&setting.file_time_format)
+        self.current_file_prefix = Box::leak(
+            format!(
+                "{}",
+                chrono::Utc::now()
+                    .with_timezone(&FixedOffset::east_opt(setting.time_zone * 3600).unwrap())
+                    .format(&setting.file_time_format)
+            )
+            .into_boxed_str(),
         );
     }
 
@@ -267,7 +273,7 @@ impl Logger {
                     .format("%Y-%m-%d")
             );
             if self.current_file_prefix != time_prefix {
-                self.current_file_prefix = time_prefix;
+                self.current_file_prefix = Box::leak(time_prefix.into_boxed_str());
                 self.current_index = self.get_index(&setting.dir_path, &self.current_file_prefix);
                 self.used_length = 0;
                 self.file = Some(self.get_file(&setting.dir_path));
@@ -363,4 +369,4 @@ impl Logger {
     }
 }
 
-unsafe impl Send for Logger {}
+unsafe impl<'a> Send for Logger<'a> {}
