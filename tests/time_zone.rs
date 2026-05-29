@@ -6,7 +6,7 @@ fn write_in() {
     clean_log!();
     log_set! {
         time_zone: 1,
-        time_detailed_display: true
+        time_detailed_display: true,
     };
 
     error!("This is an error message");
@@ -22,7 +22,7 @@ async fn write_in() {
     clean_log!();
     log_set! {
         time_zone: 1,
-        time_detailed_display: true
+        time_detailed_display: true,
     };
 
     error!("This is an error message");

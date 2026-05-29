@@ -86,7 +86,7 @@ mod async_log {
     /// set the logger by the passing the key and value
     #[macro_export]
     macro_rules! log_set {
-        ($($key:ident : $value:expr),*) => {
+        ($($key:ident : $value:expr),* $(,)?) => {
             {
                 // have to clone the setting first to avoid deadlock
                 let previous_setting = $crate::LOGSETTING.lock().await.clone();
@@ -236,7 +236,7 @@ mod sync_log {
     /// set the logger by the passing the key and value
     #[macro_export]
     macro_rules! log_set {
-        ($($key:ident : $value:expr),*) => {
+        ($($key:ident : $value:expr),* $(,)?) => {
             {
                 let previous_setting = $crate::LOGSETTING.lock().unwrap().clone();
                 *($crate::LOGSETTING.lock().unwrap()) = $crate::LogSetting {
